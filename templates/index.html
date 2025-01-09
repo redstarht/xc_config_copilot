@@ -43,6 +43,8 @@
 
     const table = jspreadsheet(document.getElementById('spreadsheet'), {
         data: data,
+        minDimensions: [3, 20],
+        allowInsertColumn: false,
         columns: [
             {
                 type: 'numeric',
