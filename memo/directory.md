@@ -1,3 +1,8 @@
+
+➡ココに保存
+https://chatgpt.com/share/67839768-f924-8011-8a70-96a345f95631
+
+
 project_root/
 ├── app/
 │   ├── __init__.py
