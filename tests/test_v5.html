@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XC-Config</title>
-    <!-- <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css" /> -->
+    <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css" />
     <link rel="stylesheet" href="../static/css/style.css" />
     <!-- ↓こっからコピペ -->
     <!-- <script src="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.js"></script>
@@ -24,27 +24,23 @@
     <header>
         <a class="title-position">XC-Config</a>
         <nav class="navtitle">テストユーザー</nav>
-    </header>
-    <div class="container">
-        <button id="save-button" type="button">保存</button>
-        <button id="save-button" type="submit">保存</button>
-    </div>
-    <div id="spreadsheet"></div>
 
+
+
+    </header>
+    <div id="spreadsheet"></div>
 
 </body>
 <script>
     var data = [
-        ['', '', '']
+        ['','','']
     ]
         // ['12345', 'Honda', '一般'],
         // ['678910', 'Honda', '課長'],
-        ;
+    ;
 
     const table = jspreadsheet(document.getElementById('spreadsheet'), {
         data: data,
-        minDimensions: [3, 20],
-        allowInsertColumn: false,
         columns: [
             {
                 type: 'numeric',
@@ -74,11 +70,9 @@
             console.log(`Cell updated: (${x}, ${y}) -> ${value} のインスタンスは${table}`);
             console.log(table)
             // 新しいデータを取得
-            var datas = table.jexcel.records[y][0].innerText
-            console.log(table.innerText)
-            // var values = [];
-            // var values = table.getData(); // [y][0] 1列目のデータ（例: 日付）を取得
-            console.log('Updated Date:', datas);
+            var values = [];
+            var values = table.getData(); // [y][0] 1列目のデータ（例: 日付）を取得
+            console.log('Updated Date:', values);
 
         }
     });

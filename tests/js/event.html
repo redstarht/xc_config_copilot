@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+  </head>
+  <body>
+    <label>機種</label>
+    <select id="model" onchange="flight()">
+      <option value="">選択してください</option>
+      <option value="B773">ボーイング777-300</option>
+      <option value="A388">エアバスA380-800</option>
+      <option value="YS11">YS-11</option>
+    </select>
+    <input type="text" id="call" value="take off!">
+    <br />
+    <br />
+    <div id="message_area"></div>
+
+    <script language="javascript" type="text/javascript">
+      // イベントハンドラー
+      function flight() {
+        var model = document.getElementById("model").value;
+        var call = document.getElementById("call").value;
+
+        var message = "";
+        if(model) {
+          message = model + " " + call.toUpperCase();
+        }
+        document.getElementById("message_area").innerHTML = message;
+      }
+
+      // イベントハンドラーを対応付ける
+      document.getElementById("call").onchange = flight;
+    </script>
+  </body>
+</html>

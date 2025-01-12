@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/jspreadsheet.min.css"
+        type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" />
+</head>
+
+<body>
+    <div id="myTableElm"></div>
+</body>
+<script>
+    var data = [
+        ['12345', 'Honda', '一般'],
+        ['678910', 'Honda', '課長'],
+    ]
+    const myTable = jspreadsheet(document.getElementById('myTableElm'), {
+        data: data,
+        columns: [
+            {
+                type: 'numeric',
+                title: '社員番号',
+                width: 90
+            },
+            {
+                type: 'text',
+                title: '氏名',
+                width: 120,
+
+            },
+            {
+                type: 'dropdown',
+                title: '役職',
+                width: 120,
+                source: [
+                    "課長",
+                    "組長",
+                    "班長",
+                    "一般",
+                    // (...)
+                ]
+            }
+        ],
+        onchange: function (myTable, cell, x, y, value) {
+            var values = myTable.getData();
+            console.log('値は：${values}');
+            console.log(values);
+        }
+
+
+    });
+
+</script>
+
+</html>
