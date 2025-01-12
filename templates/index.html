@@ -8,14 +8,14 @@
     <!-- <link rel="stylesheet" href="https://unpkg.com/ress/dist/ress.min.css" /> -->
     <link rel="stylesheet" href="../static/css/style.css" />
     <!-- ↓こっからコピペ -->
-    <!-- <script src="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.js"></script>
+    <script src="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.js"></script>
     <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.css" type="text/css" />
     <script src="https://jsuites.net/v5/jsuites.js"></script>
-    <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" /> -->
-    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/index.min.js"></script>
+    <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" />
+    <!-- <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/index.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/jspreadsheet.min.css" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" /> -->
 
 </head>
 
@@ -25,13 +25,12 @@
         <nav class="navtitle">テストユーザー</nav>
     </header>
     <div class="container">
-        <button id="save-button" type="button">保存</button>
         <button id="save-button" type="submit">保存</button>
     </div>
     <div id="spreadsheet"></div>
 
-
 </body>
+
 <script>
     var data = [
         ['', '', '']
@@ -89,8 +88,33 @@
             console.log('Updated Date:', datas);
 
         }
-    }
-    );
+    });
 </script>
+<script>
+    document.getElementById('save-button').addEventListener('click',function()
+    {
+        var alldate = table.getData();
+
+        fetch('/save-data',
+        {
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+            },
+            body : JSON.stringify({records:data}),
+        })
+        .then(response=>response.json())
+        .then(data=>{
+            console.log('Server response',data);
+            alert('データが保存されました！');
+        })
+        .catch(error => {
+                console.error('Error:', error);
+                alert('保存に失敗しました。');
+            });
+        });
+    
+</script>
+
 
 </html>
