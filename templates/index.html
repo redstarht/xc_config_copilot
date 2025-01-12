@@ -12,9 +12,8 @@
     <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.css" type="text/css" />
     <script src="https://jsuites.net/v5/jsuites.js"></script>
     <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" /> -->
-    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/index.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@4/dist/jspreadsheet.min.css"
-        type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/index.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/jspreadsheet.min.css" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" />
 
@@ -33,11 +32,11 @@
 </body>
 <script>
     var data = [
-        ['','','']
+        ['', '', '']
     ]
         // ['12345', 'Honda', '一般'],
         // ['678910', 'Honda', '課長'],
-    ;
+        ;
 
     const table = jspreadsheet(document.getElementById('spreadsheet'), {
         data: data,
@@ -66,6 +65,15 @@
                 ]
             }
         ],
+        // onchange: function (el, cell, x, y, value, oldValue) {
+        //     console.log({ el });
+        //     console.log({ cell });
+        //     console.log({ x });
+        //     console.log({ y });
+        //     console.log({ value });
+        //     console.log({ oldValue });
+        // }
+
         onchange: function (table, cell, x, y, value) {
             console.log(`Cell updated: (${x}, ${y}) -> ${value} のインスタンスは${table}`);
             console.log(table)
@@ -75,7 +83,8 @@
             console.log('Updated Date:', values);
 
         }
-    });
+    }
+    );
 </script>
 
 </html>
