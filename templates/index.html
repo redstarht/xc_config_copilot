@@ -32,6 +32,35 @@
 </body>
 
 <script>
+        fetch_data = null;
+        let selectedText = null;
+        document.readyState === "complete" ? init() : window.onload = init;
+        //html読み込まれた後にinit関数読み込み指定
+        // Page読み込みパターンに対応　書き方は三項演算子
+        // init() 即座に実行 init 関数を登録
+        function init() {
+            // get_test_tb関数からデータを取得しf_data変数へ格納し、
+            // アロー関数でset select index nbrs関数の引数に格納
+            get_test_tb().then((f_data) => {
+                set_test_tb(f_data);
+            });
+        }
+
+        function get_test_tb(){
+            return fetch('{{url_for("load_db")}}')
+                .then(
+                    
+                )
+
+            return response
+            pass
+
+
+        }
+
+
+
+
     var data = [
         ['', '', '']
     ]
@@ -101,6 +130,7 @@
             headers:{
                 'Content-Type':'application/json',
             },
+            // 文字型へ変換
             body : JSON.stringify({records:data}),
         })
         .then(response=>response.json())
