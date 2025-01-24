@@ -10,14 +10,14 @@ def con_db():
     return sqlite3.connect(db)
 
 @app.route("/load_db")
-def load_test_tb():
+def load_db():
     try:
         conn = con_db()
         cursor = conn.cursor()
         cursor.execute("SELECT * from test_tb")
         data = cursor.fetchall()
         print(data)
-        return data
+        return jsonify(data)
     
     except Exception as e:
         print(e)

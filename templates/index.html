@@ -32,45 +32,45 @@
 </body>
 
 <script>
-        fetch_data = null;
-        let selectedText = null;
-        document.readyState === "complete" ? init() : window.onload = init;
-        //html読み込まれた後にinit関数読み込み指定
-        // Page読み込みパターンに対応　書き方は三項演算子
-        // init() 即座に実行 init 関数を登録
-        function init() {
-            // get_test_tb関数からデータを取得しf_data変数へ格納し、
-            // アロー関数でset select index nbrs関数の引数に格納
-            get_test_tb().then((f_data) => {
-                set_test_tb(f_data);
-            });
-        }
+    var data = []
+    let table;
+    fetch_data = null;
+    let selectedText = null;
+    document.readyState === "complete" ? init() : window.onload = init;
+    //html読み込まれた後にinit関数読み込み指定
+    // Page読み込みパターンに対応　書き方は三項演算子
+    // init() 即座に実行 init 関数を登録
+    function init() {
+        // get_test_tb関数からデータを取得しf_data変数へ格納し、
+        // アロー関数でset select index nbrs関数の引数に格納
+        get_test_tb().then((f_data) => {
+            set_test_tb(f_data);
+        });
+    }
 
-        function get_test_tb(){
-            return fetch('{{url_for("load_db")}}')
-                .then(
-                    
-                )
+    function get_test_tb() {
+        return fetch('{{url_for("load_db")}}')
+            .then((response) => {
+                console.log(response);
+                return response.json();
+            })
+            .then((res_data) => {
+                console.log(res_data)
+                return res_data
+            })
+            .catch((error) => {
+                console.error(error);
 
-            return response
-            pass
+            })
+
+    }
 
 
-        }
-
-
-
-
-    var data = [
-        ['', '', '']
-    ]
-        // ['12345', 'Honda', '一般'],
-        // ['678910', 'Honda', '課長'],
-        ;
-
-    const table = jspreadsheet(document.getElementById('spreadsheet'), {
+    function set_test_tb(f_data) {
+        data = f_data
+        table = jspreadsheet(document.getElementById('spreadsheet'), {
         data: data,
-        minDimensions: [3, 20],
+        minDimensions: [3, 30],
         allowInsertColumn: false,
         columns: [
             {
@@ -118,32 +118,99 @@
 
         }
     });
-</script>
+
+
+
+    }
+
+
+
+
+
+
+    // [
+    //     ['', '', '']
+    // ]
+    // ['12345', 'Honda', '一般'],
+    // ['678910', 'Honda', '課長'],
+    
+
+//     const table = jspreadsheet(document.getElementById('spreadsheet'), {
+//         data: data,
+//         minDimensions: [3, 30],
+//         allowInsertColumn: false,
+//         columns: [
+//             {
+//                 type: 'numeric',
+//                 title: '社員番号',
+//                 width: 90
+//             },
+//             {
+//                 type: 'text',
+//                 title: '氏名',
+//                 width: 120,
+
+//             },
+//             {
+//                 type: 'dropdown',
+//                 title: '役職',
+//                 width: 120,
+//                 source: [
+//                     "課長",
+//                     "組長",
+//                     "班長",
+//                     "一般",
+//                     // (...)
+//                 ]
+//             }
+//         ],
+//         // onchange: function (el, cell, x, y, value, oldValue) {
+//         //     console.log({ el });
+//         //     console.log({ cell });
+//         //     console.log({ x });
+//         //     console.log({ y });
+//         //     console.log({ value });
+//         //     console.log({ oldValue });
+//         // }
+
+//         onchange: function (table, cell, x, y, value) {
+//             console.log(`Cell updated: (${x}, ${y}) -> ${value} のインスタンスは${table}`);
+//             console.log(table)
+//             // 新しいデータを取得
+//             var datas = table.jexcel.records[y][0].innerText
+//             console.log(table.innerText)
+//             // var values = [];
+//             // var values = table.getData(); // [y][0] 1列目のデータ（例: 日付）を取得
+//             console.log('Updated Date:', datas);
+
+//         }
+//     });
+//
+ </script>
 <script>
-    document.getElementById('save-button').addEventListener('click',function()
-    {
+    document.getElementById('save-button').addEventListener('click', function () {
         var alldate = table.getData();
 
         fetch('/save-data',
-        {
-            method:'POST',
-            headers:{
-                'Content-Type':'application/json',
-            },
-            // 文字型へ変換
-            body : JSON.stringify({records:data}),
-        })
-        .then(response=>response.json())
-        .then(data=>{
-            console.log('Server response',data);
-            alert('データが保存されました！');
-        })
-        .catch(error => {
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // 文字型へ変換
+                body: JSON.stringify({ records: data }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response', data);
+                alert('データが保存されました！');
+            })
+            .catch(error => {
                 console.error('Error:', error);
                 alert('保存に失敗しました。');
             });
-        });
-    
+    });
+
 </script>
 
 
