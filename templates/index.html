@@ -114,7 +114,7 @@
             console.log(table.innerText)
             // var values = [];
             // var values = table.getData(); // [y][0] 1列目のデータ（例: 日付）を取得
-            console.log('Updated Date:', datas);
+            console.log('Updated Data:', datas);
 
         }
     });
@@ -191,7 +191,7 @@
     document.getElementById('save-button').addEventListener('click', function () {
         var alldate = table.getData();
 
-        fetch('/save-data',
+        fetch('/save_data',
             {
                 method: 'POST',
                 headers: {

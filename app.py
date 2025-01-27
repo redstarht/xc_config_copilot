@@ -44,8 +44,8 @@ def save_recode_to_db(records):
 def index():
     return render_template("index.html")
 
-@app.route("/save-data",methods=['POST'])
-def save_date():
+@app.route("/save_data",methods=['POST'])
+def save_data():
     data = request.get_json()
     # dict型のメソッド .get 第2引数はデフォルト値
     records = data.get('records',[])
