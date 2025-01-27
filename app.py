@@ -29,7 +29,16 @@ def save_recode_to_db(records):
     cursor = conn.cursor()
     # 空欄データの削除
     ## リスト内包表記　https://chatgpt.com/share/6790e8f6-0468-8011-9e00-be5c9a91fbb7
-    filtered_records = [record for record in records if any(field.strip() for field in record)]
+    # filtered_records = [record for record in records if any(field.strip() for field in record)]
+    filtered_records = []
+    for record in records:
+        for field in record:
+            if str(field).strip():
+                filtered_records.append(record)
+                break
+
+
+    
     # 必要に応じて既存データを削除する
     cursor.execute("DELETE From test_tb")
     # 新しいデータを挿入
@@ -47,7 +56,7 @@ def index():
 @app.route("/save_data",methods=['POST'])
 def save_data():
     data = request.get_json()
-    # dict型のメソッド .get 第2引数はデフォルト値
+    # dict型のメソッド .get 第2引数はデフォルト値,JS側で recordsプロパティにデータ格納されてる
     records = data.get('records',[])
 
 # application/jsonとは　：　JSONフォーマットでデータが送信される
