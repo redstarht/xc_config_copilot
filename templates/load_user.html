@@ -1,0 +1,13 @@
+{% extends "index.html" %}
+{% block content %}
+{% block header %}
+
+{% for user in users %}
+<a href="/{{user.id}}/update" role="button">編集</a>
+<p>ユーザー名: {{ user.username}}</p>
+<p>パスワード: {{ user.password}}</p>
+<p>作成日時:{{ user.created_at}}</p>
+{% endfor %}
+
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block content %}
+{% block header %}
+    <form method="post">
+        <label for="username">ユーザー名</label>
+        <input type="text" name="username" value={{ user_id.username }}>
+
+        <label for="password">パスワード</label>
+        <input type="text" name="password" value={{ user_id.password }}>
+        <input type="submit" value="登録">
+
+    </form>
+
+{% endblock %}
+{% endblock %}

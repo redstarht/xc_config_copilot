@@ -12,23 +12,26 @@
     <link rel="stylesheet" href="https://bossanova.uk/jspreadsheet/v4/jspreadsheet.css" type="text/css" />
     <script src="https://jsuites.net/v5/jsuites.js"></script>
     <link rel="stylesheet" href="https://jsuites.net/v5/jsuites.css" type="text/css" />
-    <!-- <script src="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/index.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jspreadsheet-ce@5.0.0-beta.3/dist/jspreadsheet.min.css" type="text/css" />
-    <script src="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jsuites/dist/jsuites.min.css" type="text/css" /> -->
+
 
 </head>
 
 <body>
+<a href="/create" role="button">ユーザー作成画面</a>
+<a href="/load_user" role = "button">ユーザー参照画面</a>
+
     <header>
         <a class="title-position">XC-Config</a>
         <nav class="navtitle">テストユーザー</nav>
     </header>
+    {% block content %}
+    {% block header%}
+    {% endblock %}
     <div class="container">
         <button id="save-button" type="submit">保存</button>
     </div>
     <div id="spreadsheet"></div>
-
+    {% endblock %}
 </body>
 
 <script>
