@@ -1,0 +1,15 @@
+{% extends "index.html" %}
+{% block content %}
+{% block header %}
+<h1>ログイン画面</h1>
+    <form method="post">
+        <label for="username">ユーザー名</label>
+        <input type="text" name="username">
+        <label for="password">パスワード</label>
+        <input type="password" name="password">
+        <input type="submit" value="ログイン">
+
+    </form>
+
+{% endblock %}
+{% endblock %}

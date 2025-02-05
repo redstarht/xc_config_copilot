@@ -4,6 +4,8 @@
 
 {% for user in users %}
 <a href="/{{user.id}}/update" role="button">編集</a>
+<a href="{{user.id}}/delete" role="button">削除</a>
+<a href="loggout" role="button">ログアウト</a>
 <p>ユーザー名: {{ user.username}}</p>
 <p>パスワード: {{ user.password}}</p>
 <p>作成日時:{{ user.created_at}}</p>
