@@ -7,37 +7,49 @@ body {
 
 /* ヘッダー */
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 1rem;
     color: #fff;
     background: linear-gradient(to right, #fa709a 0%, #fee140 100%);
 }
 
-/* タイトル */
-.title-position {
-    font-size: 1.5rem;
+.navbar{
+    padding: 0 !important;
+
+}
+
+.navbar-brand {
+    font-family: "Sora", serif;
+    background-color: rgba(73, 73, 73, 0.3); /* 白色を30%透明 */
+    padding: 1rem 1rem;
+    border-radius: 8px; /* 角を丸める */
+    font-size:1.5rem;
+    color: #fff;
     font-weight: bold;
-    margin-left: 1rem;
+
+}
+
+.navbar-nav {
+    background-color: rgba(0, 0, 0, 0.3); /* 黒色を30%透明 */
+    padding: 0.5rem 1rem;
+    border-radius: 8px; /* 角を丸める */
 }
 
 /* ナビゲーション */
-nav {
+/* nav {
     font-size: 1rem;
     display: flex;
     gap: 1rem;
     margin-right: 1rem;
     justify-content: right;
-}
+} */
 
-nav a {
+/* nav a {
     color: white;
     text-decoration: none;
     background: rgba(255, 255, 255, 0.2);
     padding: 5px 10px;
     border-radius: 5px;
-}
+} */
 
 /* スプレッドシート（表） */
 #spreadsheet {
