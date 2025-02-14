@@ -10,10 +10,18 @@ header {
     padding: 1rem;
     color: #fff;
     background: linear-gradient(to right, #fa709a 0%, #fee140 100%);
+    z-index: 0;
 }
+
 
 .navbar{
     padding: 0 !important;
+
+}
+
+.navbar .navbar-toggler .navbar-index{
+z-index: 2;
+
 
 }
 
@@ -34,22 +42,14 @@ header {
     border-radius: 8px; /* 角を丸める */
 }
 
-/* ナビゲーション */
-/* nav {
-    font-size: 1rem;
-    display: flex;
-    gap: 1rem;
-    margin-right: 1rem;
-    justify-content: right;
-} */
-
-/* nav a {
-    color: white;
-    text-decoration: none;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 5px 10px;
-    border-radius: 5px;
-} */
+/* ロゴ画像を中央配置 */
+.logo-container {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    max-height: 50px; /* 必要に応じて調整 */
+    z-index: 1;
+}
 
 /* スプレッドシート（表） */
 #spreadsheet {

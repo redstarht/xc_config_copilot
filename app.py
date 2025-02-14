@@ -10,7 +10,7 @@ import os
 # 毎回選び内押してるんだけど。。。
 
 
-app = Flask(__name__)
+app = Flask(__name__,static_folder="./static")
 
 litedb = "tests/test.db"
 
