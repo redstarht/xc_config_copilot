@@ -1,3 +1,4 @@
 {
-    "python.defaultInterpreterPath": "C:\\Users\\na-taniguchi\\z\\venvs\\xc_config\\Scripts\\python.exe"
+    "python.defaultInterpreterPath": "C:\\Users\\na-taniguchi\\z\\venvs\\xc_config\\Scripts\\python.exe",
+    "liveServer.settings.port": 5501
 }

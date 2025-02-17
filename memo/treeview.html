@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部課管理システム</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* ツリービューのスタイル */
+        .tree-view {
+            list-style: none;
+            padding-left: 0;
+        }
+        .tree-view ul {
+            list-style: none;
+            padding-left: 20px;
+        }
+        .tree-item {
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .tree-item:hover {
+            background-color: #f8f9fa;
+        }
+        .tree-item.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        /* サイドバーのスタイル */
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* トーストメッセージ */
+
+        .toast-header {
+            background-color: #c243c4;
+        }
+        .toast-body{
+            background-color: #d73eda;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row mt-4">
+            <!-- サイドバー -->
+            <div class="col-12 col-md-4 col-lg-3 sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        えらぶ
+                    </div>
+                    <div class="card-body">
+                        <ul class="tree-view" id="treeView"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 入力フォーム -->
+            <div class="col-12 col-md-8 col-lg-9">
+                <div class="card">
+                    <div class="card-header">
+                        課情報をへんしゅう
+                    </div>
+                    <div class="card-body">
+                        <form id="editForm">
+                            <div class="mb-3">
+                                <label for="item1" class="form-label">項目１</label>
+                                <input type="text" class="form-control" id="item1" name="item1">
+                            </div>
+                            <div class="mb-3">
+                                <label for="item2" class="form-label">項目２</label>
+                                <input type="text" class="form-control" id="item2" name="item2">
+                            </div>
+                            <div class="mb-3">
+                                <label for="item3" class="form-label">項目３</label>
+                                <input type="text" class="form-control" id="item3" name="item3">
+                            </div>
+                            <button type="submit" class="btn btn-primary">確定</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- トースト通知 -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="saveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">通知</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                登録されました。（登録されないけど。）
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // サーバーから貰うデータのJSONのさんぷる
+        const data = [
+            {ky:"あいち", bu:"あいあい部", ka:"あい課", 項目１:"あいか", 項目２:"アアア"},
+            {ky:"あいち", bu:"あいあい部", ka:"あい２課", 項目１:"あい２", 項目２:"アアア"},
+            {ky:"あいち", bu:"あーあ部", ka:"あ２課", 項目１:"あ２", 項目２:"アアア"},
+            {ky:"みえ", bu:"みえる部", ka:"みえみえ課", 項目１:"見える", 項目２:"アアア２"},
+            {ky:"ほっかいどう", bu:"ほうかほう部", ka:"ほっほ課", 項目１:"", 項目２:"イイイ"},
+            {ky:"ふくおか", bu:"ふく部", ka:"ふう課", 項目１:"ふうう", 項目２:"ウウウ"},
+        ];
+
+        // ツリービューの構築
+        function buildTreeView() {
+            const treeView = document.getElementById('treeView');
+            const locations = {};
+
+            // 拠点、部、課の階層でデータを整理する
+            data.forEach(item => {
+                if (!locations[item.ky]) {
+                    locations[item.ky] = {};
+                }
+                if (!locations[item.ky][item.bu]) {
+                    locations[item.ky][item.bu] = [];
+                }
+                locations[item.ky][item.bu].push(item);
+            });
+
+            // ツリービューの作成
+            for (const [ky, departments] of Object.entries(locations)) {
+                // 拠点レベル
+                const kyLi = document.createElement('li');
+                const kyDiv = document.createElement('div');
+                kyDiv.className = 'tree-item';
+                kyDiv.innerHTML = `<i class="bi bi-caret-right-fill me-2"></i>${ky}`;
+                
+                const buUl = document.createElement('ul');
+                buUl.style.display = 'none';
+
+                // 部レベル
+                for (const [bu, items] of Object.entries(departments)) {
+                    const buLi = document.createElement('li');
+                    const buDiv = document.createElement('div');
+                    buDiv.className = 'tree-item';
+                    buDiv.innerHTML = `<i class="bi bi-caret-right-fill me-2"></i>${bu}`;
+                    
+                    const kaUl = document.createElement('ul');
+                    kaUl.style.display = 'none';
+
+                    // 課レベル
+                    items.forEach(item => {
+                        const kaLi = document.createElement('li');
+                        const kaDiv = document.createElement('div');
+                        kaDiv.className = 'tree-item';
+                        kaDiv.textContent = item.ka;
+                        kaDiv.onclick = () => selectKa(item);
+                        kaLi.appendChild(kaDiv);
+                        kaUl.appendChild(kaLi);
+                    });
+
+                    // 部レベルの展開/折りたたみ
+                    buDiv.onclick = (e) => {
+                        e.stopPropagation();
+                        const icon = buDiv.querySelector('i');
+                        if (kaUl.style.display === 'none') {
+                            kaUl.style.display = 'block';
+                            icon.className = 'bi bi-caret-down-fill me-2';
+                        } else {
+                            kaUl.style.display = 'none';
+                            icon.className = 'bi bi-caret-right-fill me-2';
+                        }
+                    };
+
+                    buLi.appendChild(buDiv);
+                    buLi.appendChild(kaUl);
+                    buUl.appendChild(buLi);
+                }
+
+                // 拠点レベルの展開/折りたたみ
+                kyDiv.onclick = (e) => {
+                    e.stopPropagation();
+                    const icon = kyDiv.querySelector('i');
+                    if (buUl.style.display === 'none') {
+                        buUl.style.display = 'block';
+                        icon.className = 'bi bi-caret-down-fill me-2';
+                    } else {
+                        buUl.style.display = 'none';
+                        icon.className = 'bi bi-caret-right-fill me-2';
+                    }
+                };
+
+                kyLi.appendChild(kyDiv);
+                kyLi.appendChild(buUl);
+                treeView.appendChild(kyLi);
+            }
+        }
+
+        // 課の選択処理
+        function selectKa(item) {
+            // 以前の選択を解除
+            document.querySelectorAll('.tree-item.active').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // 新しく選択された課をハイライト
+            event.target.classList.add('active');
+
+            // 右側のフォームに値を設定
+            document.getElementById('item1').value = item.項目１;
+            document.getElementById('item2').value = item.項目２;
+            document.getElementById('item3').value = '';
+        }
+
+        // 登録ボタンのフォームの送信処理（だみー。トーストメッセージを表示するだけ）
+        document.getElementById('editForm').onsubmit = (e) => {
+            e.preventDefault();
+            const toast = new bootstrap.Toast(document.getElementById('saveToast'));
+            toast.show();
+        };
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', buildTreeView);
+    </script>
+</body>
+</html>
