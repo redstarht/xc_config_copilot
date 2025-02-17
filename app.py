@@ -1,203 +1,77 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-import pytz
-import sqlite3
-import os
-# 仮想環境の指定ってどうやってやる？
-# 毎回選び内押してるんだけど。。。
 
-
-app = Flask(__name__,static_folder="./static")
-
-litedb = "tests/test.db"
-
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///sa_test.db"
-app.config["SECRET_KEY"] = os.urandom(24)
-
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
-login_manager = LoginManager()
-
-login_manager.init_app(app)
-
-
-# db.modelは SQLAlchemyを使用するためのクラス
-class user_detail(db.Model):
+class Factory(db.Model):
+    __tablename__ = 'factories'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(40), nullable=False)
-    password = db.Column(db.String(300), nullable=False)
-    created_at = db.Column(
-        db.DateTime,
-        nullable=False,
-        default=lambda: datetime.now(pytz.timezone("Asia/Tokyo")),
-    )
+    code = db.Column(db.String(10), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    departments = db.relationship('Department', backref='factory', lazy=True)
+    # Departmentテーブルのfactory列と双方向リレーション
 
-
-class User(UserMixin, db.Model):
+class Department(db.Model):
+    __tablename__ = 'departments'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), nullable=False, unique=True)
-    password = db.Column(db.String(300), nullable=False)
+    factory_id = db.Column(db.Integer, db.ForeignKey('factories.id'), nullable=False)
+    code = db.Column(db.String(10), nullable=False)
+    mgmt_code = db.Column(db.String(10))
+    name = db.Column(db.String(100), nullable=False)
+    sections = db.relationship('Section', backref='department', lazy=True)
+
+class Section(db.Model):
+    __tablename__ = 'sections'
+    id = db.Column(db.Integer, primary_key=True)
+    department_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    code = db.Column(db.String(10), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    subsections = db.relationship('Subsection', backref='section', lazy=True)
+
+class Subsection(db.Model):
+    __tablename__ = 'subsections'
+    id = db.Column(db.Integer, primary_key=True)
+    section_id = db.Column(db.Integer, db.ForeignKey('sections.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
 
 
-# ログインしてるかの状態を確認するセッション
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-def con_db():
-    return sqlite3.connect(litedb)
-
-
-def save_recode_to_db(records):
-    conn = con_db()
-    cursor = conn.cursor()
-    # 空欄データの削除
-    # リスト内包表記　https://chatgpt.com/share/6790e8f6-0468-8011-9e00-be5c9a91fbb7
-    # filtered_records = [record for record in records if any(field.strip() for field in record)]
-    filtered_records = []
-    for record in records:
-        for field in record:
-            if str(field).strip():
-                filtered_records.append(record)
-                break
-
-    # 必要に応じて既存データを削除する
-    cursor.execute("DELETE From test_tb")
-    # 新しいデータを挿入
-    cursor.executemany(
-        "INSERT INTO test_tb (id,name,official) VALUES(?,?,?)", filtered_records
-    )
-
-    conn.commit()
-    conn.close()
-
-
-@app.route("/")
+@app.route('/')
 def index():
-    return render_template("index.html")
+    factories = Factory.query.all()
+    return render_template('index.html', factories=factories)
 
+@app.route('/departments/<int:factory_id>')
+def departments(factory_id):
+    departments = Department.query.filter_by(factory_id=factory_id).all()
+    return render_template('departments.html', departments=departments)
 
-@app.route("/signup", methods=["GET", "POST"])
-def signup():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+@app.route('/sections/<int:department_id>')
+def sections(department_id):
+    sections = Section.query.filter_by(department_id=department_id).all()
+    return render_template('sections.html', sections=sections)
 
-        user = User(
-            username=username,
-            password=generate_password_hash(password, method="pbkdf2:sha256"),
-        )
+@app.route('/subsections/<int:section_id>')
+def subsections(section_id):
+    subsections = Subsection.query.filter_by(section_id=section_id).all()
+    return render_template('subsections.html', subsections=subsections)
 
-        db.session.add(user)
+@app.route('/add_subsection/<int:section_id>', methods=['GET', 'POST'])
+def add_subsection(section_id):
+    if request.method == 'POST':
+        name = request.form['name']
+        new_subsection = Subsection(section_id=section_id, name=name)
+        db.session.add(new_subsection)
         db.session.commit()
-        return redirect("/login")
-    else:
-        return render_template("signup.html")
+        return redirect(url_for('subsections', section_id=section_id))
+    return render_template('add_subsection.html', section_id=section_id)
 
-
-@app.route("/login", methods=["GET", "POST"])
-def login():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        # ハッシュ化されたパスワードがuser変数 (user.password) に入っている
-        user = User.query.filter_by(username=username).first()
-        print(user.password)
-        if check_password_hash(user.password, password):
-            login_user(user)
-            return redirect("/")
-
-    else:
-        return render_template("login.html")
-
-
-@app.route("/logout")
-# @login_required ➡ログインしてないとaccess出来ない制限を付けれる
-@login_required
-def logout():
-    logout_user()
-    return redirect("/login")
-
-
-@app.route("/load_db")
-def load_db():
-    try:
-        conn = con_db()
-        cursor = conn.cursor()
-        cursor.execute("SELECT * from test_tb")
-        data = cursor.fetchall()
-        print(data)
-        return jsonify(data)
-
-    except Exception as e:
-        print(e)
-
-
-@app.route("/load_user", methods=["GET", "POST"])
-def load_user():
-    if request.method == "GET":
-        users = user_detail.query.all()
-        return render_template("load_user.html", users=users)
-
-
-@app.route("/<int:id>/update", methods=["GET", "POST"])
-@login_required
-def update(id):
-    # idをキーに レコードを取得,インスタンス化
-    user_id = user_detail.query.get(id)
-    if request.method == "GET":
-        return render_template("update.html", user_id=user_id)
-    else:
-        user_id.username = request.form.get("username")
-        user_id.password = request.form.get("password")
+@app.route('/edit_subsection/<int:subsection_id>', methods=['GET', 'POST'])
+def edit_subsection(subsection_id):
+    subsection = Subsection.query.get_or_404(subsection_id)
+    if request.method == 'POST':
+        subsection.name = request.form['name']
         db.session.commit()
-
-
-@app.route("/create", methods=["GET", "POST"])
-def create():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
-
-        post = user_detail(username=username, password=password)
-
-        db.session.add(post)
-        db.session.commit()
-        return redirect("/")
-    else:
-        return render_template("create.html")
-
-
-@app.route("/delete", methods=["GET"])
-@login_required
-def delete():
-    user_id = user_detail.query.get(id)
-    db.session.delete(user_id)
-    db.session.commit()
-    return redirect("/")
-
-
-@app.route("/save_data", methods=["POST"])
-def save_data():
-    data = request.get_json()
-    # dict型のメソッド .get 第2引数はデフォルト値,JS側で recordsプロパティにデータ格納されてる
-    records = data.get("records", [])
-
-    # application/jsonとは　：　JSONフォーマットでデータが送信される
-    if not records:
-        return jsonify({"status": "error", "message": "No Records provided"}), 400
-
-    try:
-        save_recode_to_db(records)
-        return jsonify({"status": "success", "message": "Records saved successfully"})
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        return redirect(url_for('subsections', section_id=subsection.section_id))
+    return render_template('edit_subsection.html', subsection=subsection)

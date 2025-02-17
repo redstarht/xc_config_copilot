@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head>
+    <title>Departments</title>
+</head>
+<body>
+    <h1>Departments</h1>
+    <ul>
+        {% for department in departments %}
+        <li><a href="{{ url_for('sections', department_id=department.id) }}">{{ department.name }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

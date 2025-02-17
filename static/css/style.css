@@ -19,7 +19,7 @@ header {
 
 }
 
-.navbar .navbar-toggler .navbar-index{
+.navbar-collapse .navbar-toggler .navbar-index{
 z-index: 2;
 
 
@@ -48,7 +48,8 @@ z-index: 2;
     left: 50%;
     transform: translateX(-50%);
     max-height: 50px; /* 必要に応じて調整 */
-    z-index: 1;
+    /* width: 100%; */
+
 }
 
 /* スプレッドシート（表） */
