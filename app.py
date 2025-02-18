@@ -47,6 +47,8 @@ class Subsection(db.Model):
 @app.route('/')
 def index():
     factories = Factory.query.all()
+    # factories_json = [factory.to_dict for factory in factories]
+    print(factories)
     return render_template('index.html', factories=factories)
 
 
