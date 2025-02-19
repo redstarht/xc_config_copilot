@@ -13,7 +13,8 @@ class Factory(db.Model):
     name = db.Column(db.String(100), nullable=False)
     departments = db.relationship('Department', backref='factory', lazy=True)
     # Departmentテーブルのfactory列と双方向リレーション
-
+    # def __repr__(self):
+    #     return f'<Factory id={self.id} code={self.code} name={self.name}>'
 
 class Department(db.Model):
     __tablename__ = 'departments'
@@ -47,8 +48,10 @@ class Subsection(db.Model):
 @app.route('/')
 def index():
     factories = Factory.query.all()
+    print(f'{factories.name} {factories.code}')
+    factoryclass = repr(factories)
+    print(factoryclass)
     # factories_json = [factory.to_dict for factory in factories]
-    print(factories)
     return render_template('index.html', factories=factories)
 
 

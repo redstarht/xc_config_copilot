@@ -25,7 +25,7 @@
 <body>
     {% block header %}
     <header>
-        <nav class="navbar navbar-expand-lg">
+        <nav class="navbar navbar-expand-md">
             <div class="container-fluid px-0 d-flex justify-content-between align-items-center position-relative">
                 <!-- 左側: XC-Config -->
                 <h1>
@@ -91,13 +91,13 @@
     {% block content %}
     {% endblock %}
 </body>
+{% block scripts %}
 <script>
 const data = '{{ url_for("index") }}';
 console.log(data)
 
 </script>
-
+{% endblock scripts %}
 </html>
 
 
-factories|tojson
