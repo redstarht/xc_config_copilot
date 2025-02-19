@@ -47,13 +47,23 @@ class Subsection(db.Model):
 
 @app.route('/')
 def index():
+    '''
+    ここは見るの画面
+    工場➡係➡選択肢で 人員 / 異常内容 までツリービューで選択
+    人員 or 異常内容を選択したら、選択した内容を画面に表示する
+    
+    '''
     factories = Factory.query.all()
-    print(f'{factories.name} {factories.code}')
-    factoryclass = repr(factories)
-    print(factoryclass)
+    # print(f'{factories.name} {factories.code}')
+    # factoryclass = repr(factories)
+    # print(factoryclass)
     # factories_json = [factory.to_dict for factory in factories]
     return render_template('index.html', factories=factories)
 
+
+@app.route('/edit_unit')
+def edit_unit():
+    return render_template('edit_unit.html')
 
 @app.route('/departments/<int:factory_id>')
 def departments(factory_id):

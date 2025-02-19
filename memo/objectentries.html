@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    てすとてすと
+</body>
+
+</html>
+<script>
+    // サーバーから貰うデータのJSONのサンプル
+    const data = [
+        { ky: "あいち", bu: "あいあい部", ka: "あい課", 項目１: "あいか", 項目２: "アアア" },
+        { ky: "あいち", bu: "あいあい部", ka: "あい２課", 項目１: "あい２", 項目２: "アアア" },
+        { ky: "あいち", bu: "あーあ部", ka: "あ２課", 項目１: "あ２", 項目２: "アアア" },
+        { ky: "みえ", bu: "みえる部", ka: "みえみえ課", 項目１: "見える", 項目２: "アアア２" },
+        { ky: "ほっかいどう", bu: "ほうかほう部", ka: "ほっほ課", 項目１: "", 項目２: "イイイ" },
+        { ky: "ふくおか", bu: "ふく部", ka: "ふう課", 項目１: "ふうう", 項目２: "ウウウ" },
+    ];
+
+    // ツリービューの構築
+    function buildTreeView() {
+        const locations = {};
+
+        // 拠点、部、課の階層でデータを整理する
+        data.forEach(item => {
+            if (!locations[item.ky]) {
+                locations[item.ky] = {};
+                console.log(locations);
+            }
+            if (!locations[item.ky][item.bu]) {
+                locations[item.ky][item.bu] = [];
+            }
+            locations[item.ky][item.bu].push(item);
+            console.log(locations);
+        });
+        // ツリービューの作成
+        for (const [ky, departments] of Object.entries(locations)) {
+            // 拠点レベル
+            const kyLi = document.createElement('li');
+            const kyDiv = document.createElement('div');
+            kyDiv.className = 'tree-item';
+            kyDiv.innerHTML = `<i class="bi bi-caret-right-fill me-2"></i>${ky}`;
+
+            const buUl = document.createElement('ul');
+            buUl.style.display = 'none';
+            console.log(`ky:${ky}`);
+            console.log(`departments:${departments},ka:${departments.ka}`);
+            
+        }
+        return locations;}
+        // 関数を実行
+        const tree = buildTreeView();
+        console.log(tree); // 結果をコンソールに出力
+</script>
