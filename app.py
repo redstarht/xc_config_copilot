@@ -1,9 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for ,jsonify
 from flask_sqlalchemy import SQLAlchemy
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 class Factory(db.Model):
@@ -13,13 +17,15 @@ class Factory(db.Model):
     name = db.Column(db.String(100), nullable=False)
     departments = db.relationship('Department', backref='factory', lazy=True)
     # Departmentテーブルのfactory列と双方向リレーション
+
     def to_dict(self):
-        return{
-            'id':self.id,
-            'code':self.code,
-            'name':self.name
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name' : self.name,
+            'departments': [dept.to_dict() for dept in self.departments]
         }
-    
+
 
 class Department(db.Model):
     __tablename__ = 'departments'
@@ -31,6 +37,14 @@ class Department(db.Model):
     name = db.Column(db.String(100), nullable=False)
     sections = db.relationship('Section', backref='department', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code':self.code,
+            'name': self.name,
+            'sections': [sec.to_dict() for sec in self.sections]
+        }
+
 
 class Section(db.Model):
     __tablename__ = 'sections'
@@ -41,6 +55,14 @@ class Section(db.Model):
     name = db.Column(db.String(100), nullable=False)
     subsections = db.relationship('Subsection', backref='section', lazy=True)
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code':self.code,
+            'name': self.name,
+            'subsections': [sub.to_dict() for sub in self.subsections]
+        }
+
 
 class Subsection(db.Model):
     __tablename__ = 'subsections'
@@ -49,6 +71,17 @@ class Subsection(db.Model):
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
 
+    def to_dict(self):
+        return {
+            'id':self.id,
+            'name':self.name
+        }
+
+
+@app.route('/api/tree', methods=['GET'])
+def get_tree():
+    factories = Factory.query.all()
+    return jsonify([factory.to_dict() for factory in factories])
 
 @app.route('/')
 def index():
@@ -56,21 +89,22 @@ def index():
     HOMEは見る専の画面
     工場➡係➡選択肢で 人員 / 異常内容 までツリービューで選択
     人員 or 異常内容を選択したら、選択した内容を画面に表示する
-    
+
     '''
-    factories = Factory.query.all()
-    factories_dict = [factory.to_dict() for factory in factories]
     # print(f'{factories.name} {factories.code}')
     # factoryclass = repr(factories)
     # print(factoryclass)
-    # factories_json = [factory.to_dict for factory in factories]
-    print(factories_dict)
+    # リスト内包表記　factories_dict = [factory.to_dict() for factory in factories]　
+
+    factories = Factory.query.all()
+    factories_dict = [factory.to_dict() for factory in factories]  # JSON変換用
     return render_template('index.html', factories=factories_dict)
 
 
 @app.route('/edit_unit')
 def edit_unit():
     return render_template('edit_unit.html')
+
 
 @app.route('/departments/<int:factory_id>')
 def departments(factory_id):

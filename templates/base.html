@@ -45,7 +45,8 @@
                 </button>
 
 
-                <div class="collapse navbar-collapse justify-content-end navbar-index z-2 text-white" id="navbarNavAltMarkup">
+                <div class="collapse navbar-collapse justify-content-end navbar-index z-2 text-white"
+                    id="navbarNavAltMarkup">
                     <div class="navbar-nav ">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">ホーム</a>
                         <a class="nav-link" href="{{ url_for('edit_unit') }}">係編集</a>
@@ -93,11 +94,85 @@
 </body>
 {% block scripts %}
 <script>
-const data = '{{ url_for("index") }}';
-console.log(data)
+    document.addEventListener('DOMContentLoaded', () => {
+        fetch('/api/tree')
+            .then(response => response.json())
+            .then(data => {
+                console.log('取得したデータ:', data);
+                buildTreeView(data);
+            })
+            .catch(error => console.error('データ取得エラー', error));
+
+    });
+
+    function buildTreeView(factories) {
+        const treeView = document.getElementById('treeView');
+        treeView.innerHTML = '';
+
+        factories.forEach(factory => {
+            const factoryLi = createTreeNode(factory.name, factory.departments, null, null);
+            treeView.appendChild(factoryLi);
+        });
+    }
+
+    function createTreeNode(name, departments, sections, subsections) {
+        const li = document.createElement('li');
+        const div = document.createElement('div');
+        div.className = 'tree-item';
+        div.innerHTML = `<i class="bi bi-caret-right-fill me-2"></i>${name}`;
+
+        const ul = document.createElement('ul');
+        ul.style.display = 'none';
+
+        // Department（製造部）の処理
+        if (departments && departments.length > 0) {
+            departments.forEach(department => {
+                ul.appendChild(createTreeNode(department.name, department.sections, null, null));
+            });
+        }
+
+        // Section（課）の処理
+        if (sections && sections.length > 0) {
+            sections.forEach(section => {
+                ul.appendChild(createTreeNode(section.name, null, section.subsections, null));
+            });
+        }
+
+        // Subsection（サブセクション）の処理
+        if (subsections && subsections.length > 0) {
+            subsections.forEach(subsection => {
+                ul.appendChild(createTreeNode(subsection.name, null, null, null));
+            });
+        }
+
+        if (ul.children.length > 0) {
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                toggleTree(ul, div);
+            });
+        }
+
+        li.appendChild(div);
+        li.appendChild(ul);
+        return li;
+    }
+
+    function toggleTree(ul, div) {
+        const icon = div.querySelector('i');
+        if (ul.style.display === 'none') {
+            ul.style.display = 'block';
+            icon.className = 'bi bi-caret-down-fill me-2'
+        } else {
+            ul.style.display = 'none';
+            icon.className = 'bi bi-caret-right-fill me-2'
+        }
+
+    }
+
+
+
 
 </script>
 {% endblock scripts %}
+
 </html>
-
-
