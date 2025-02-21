@@ -50,6 +50,7 @@
                     <div class="navbar-nav ">
                         <a class="nav-link active" aria-current="page" href="{{ url_for('index') }}">ホーム</a>
                         <a class="nav-link" href="{{ url_for('edit_unit') }}">係編集</a>
+                        <a class="nav-link" href="#">ライン編集</a>
                         <a class="nav-link" href="#">人員編集</a>
                         <a class="nav-link" href="#">異常内容編集</a>
                         <a class="nav-link" href="#">管理者画面</a>
@@ -61,6 +62,11 @@
     </header>
     {% endblock %}
     {% block containar_fluid %}
+    <div>
+        <button id="test">
+            テストボタン
+        </button>
+    </div>
     <div class="containar-fluid">
         <div class="row mt-4">
             <div class="col-12 col-md-5 col-lg-3 sidebar">
@@ -73,18 +79,18 @@
                     </div>
                 </div>
             </div>
-        </div>
-        <!-- 入力フォーム -->
-        <div class="col-12 col-lg-9">
-            <div class="card">
-                <div class="card-header">
-                    選択した課を編集
-                </div>
-                <div class="card-body">
-                    <form action="" id="editform"></form>
+
+            <!-- 入力フォーム -->
+            <div class="col-12 col-md-7 col-lg-9 ">
+                <div class="card">
+                    <div class="card-header">
+                        選択した課に所属する係を編集
+                    </div>
+                    <div class="card-body">
+                        <form action="" id="editform"></form>
+                    </div>
                 </div>
             </div>
-
 
         </div>
     </div>
@@ -98,8 +104,9 @@
         fetch('/api/tree')
             .then(response => response.json())
             .then(data => {
-                console.log('取得したデータ:', data);
-                buildTreeView(data);
+                console.log('取得したデータ:', JSON.stringify(data, null, 2));
+                const mergedData = mergeDepartmentsByName(data);
+                buildTreeView(mergedData);
             })
             .catch(error => console.error('データ取得エラー', error));
 
@@ -115,7 +122,7 @@
         });
     }
 
-    function createTreeNode(name, departments, sections, subsections) {
+    function createTreeNode(name, departments, sections, subsections, itemData) {
         const li = document.createElement('li');
         const div = document.createElement('div');
         div.className = 'tree-item';
@@ -127,21 +134,21 @@
         // Department（製造部）の処理
         if (departments && departments.length > 0) {
             departments.forEach(department => {
-                ul.appendChild(createTreeNode(department.name, department.sections, null, null));
+                ul.appendChild(createTreeNode(department.name, department.sections, null, null, department));
             });
         }
 
         // Section（課）の処理
         if (sections && sections.length > 0) {
             sections.forEach(section => {
-                ul.appendChild(createTreeNode(section.name, null, section.subsections, null));
+                ul.appendChild(createTreeNode(section.name, null, section.subsections, null, section));
             });
         }
 
-        // Subsection（サブセクション）の処理
+        // Subsection（係）の処理
         if (subsections && subsections.length > 0) {
             subsections.forEach(subsection => {
-                ul.appendChild(createTreeNode(subsection.name, null, null, null));
+                ul.appendChild(createTreeNode(subsection.name, null, null, null, subsection));
             });
         }
 
@@ -152,10 +159,75 @@
             });
         }
 
+        if (itemData) {
+            div.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectel(e, itemData);
+            }
+            )
+
+
+        }
+
         li.appendChild(div);
         li.appendChild(ul);
         return li;
     }
+
+    function mergeDepartmentsByName(factories) {
+        return factories.map( factory => {
+                // 名前をキーにした統合オブジェクトを生成
+                const departmentMap = {};
+
+                if (factory.departments) {
+                    factory.departments.forEach(dept => {
+                        // 始めて登録するnameなら実行
+                        if (!departmentMap[dept.name]) {
+                            departmentMap[dept.name] = {
+                                name: dept.name,
+                                sections: [],
+                                ids: [dept.id]
+                            };
+                        
+                        
+                        } else {
+                    // 既に登録されていたら、IDを実行
+                        departmentMap[dept.name].ids.push(dept.id);
+                        }
+                        if (dept.sections) {
+                            departmentMap[dept.name].sections = mergeSectionsByName(
+                                [...departmentMap[dept.name].sections,...dept.sections]
+                            )
+                        }
+                    });
+            }    
+                return {
+                    ...factory,
+                    departments : Object.values(departmentMap)
+                };
+            });
+    }
+
+
+    function mergeSectionsByName(sections){
+        const sectionMap = {};
+        sections.forEach(section =>{
+            if(!sectionMap[section.name]){
+                sectionMap[section.name] = {
+                    name : section.name,
+                    subsections : [],
+                    ids : [section.id]
+                }
+            }else{
+                sectionMap[section.name].ids.push(section.id);
+            }
+            if (section.subsections){
+                sectionMap[section.name].subsections.push(...section.subsections);
+            }
+        })
+        return Object.values(sectionMap)
+    }
+
 
     function toggleTree(ul, div) {
         const icon = div.querySelector('i');
@@ -169,7 +241,29 @@
 
     }
 
+    document.getElementById("test").addEventListener("click",
+        function () {
+            document.querySelectorAll('.tree-item').forEach(item => {
+                console.log(item.textContent)
+            });  // 各要素のテキストを表示
+        });
 
+    function selectel(event, item) {
+        // 前の選択を解除する
+        document.querySelectorAll('.tree-item.active').forEach(el => {
+            el.classList.remove('active');
+
+
+        });
+        // 選択した要素にハイライトを付ける
+        event.currentTarget.classList.add('active');
+
+        // フォームに値をセットする
+        document.getElementById('item1').value = item.name || '組付け係';
+        document.getElementById('item2').value = item.name || '焼き入れ係';
+        document.getElementById('item3').value = item.name || '造管係';
+
+    }
 
 
 </script>

@@ -21,6 +21,10 @@ header {
 
 .navbar-collapse .navbar-toggler .navbar-index{
 z-index: 2;
+}
+
+.card-header{
+    font-size: 2rem !important;
 
 
 }
@@ -106,6 +110,41 @@ button:hover {
     background-color: #0056b3;
 }
 
+.tree-view {
+    list-style: none;
+    padding-left: 0;
+}
+
+.tree-view ul {
+    list-style: none;
+    padding-left: 20px;
+}
+
+.tree-item {
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.tree-item:hover {
+    background-color: #f8f9fa;
+}
+
+.tree-item.active {
+    background-color: #0d6efd;
+    color: white;
+}
+
+/* トーストメッセージ */
+
+.toast-header {
+    background-color: #c243c4;
+}
+
+.toast-body {
+    background-color: #d73eda;
+}
+
 /* スマホ対応 */
 @media (max-width: 768px) {
     header {
@@ -122,4 +161,9 @@ button:hover {
     .container {
         width: 95%;
     }
+/* サイドバーのスタイル */
+    .sidebar {
+        margin-bottom: 20px;
+    }
+
 }
