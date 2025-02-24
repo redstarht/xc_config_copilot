@@ -87,12 +87,17 @@
                         選択した課に所属する係を編集
                     </div> -->
                     <div class="card-body">
-                        <form action="" id="editform"></form>
+                        <form action="" id="editform">
+                        {% for i in range(1,6) %}
                             <div class="mb-3">
-                                <label for="item1" class="item1">係1</label>
-                                <input for="text" class="form-control" id="item1" name="item1">
-
+                                <label for="item1" class="item1">係{{i}}</label>
+                                <input for="text" class="form-control" id="item{{i}}" name="item{{i}}">
+                                <small id = "createdAt{{i}}" class="text-muted"></small><br>
+                                <small id = "updatedAt{{i}}" class="text-muted"></small>
                             </div>
+                            {% endfor %}
+                            <button type='button' id="saveButton" class="btn btn-primary">保存</button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -260,6 +265,9 @@
             });  // 各要素のテキストを表示
         });
 
+    
+    // 要素ハイライト・係データ更新・保存
+    // ここのitem が departmentだけなのに動作する理屈がわからない
     function selectel(event, item) {
         // 前の選択を解除する
         document.querySelectorAll('.tree-item.active').forEach(el => {
@@ -270,10 +278,17 @@
         // 選択した要素にハイライトを付ける
         event.currentTarget.classList.add('active');
 
+        // 選択した section_idを取得
+        const sectionId = item.ids[0];
+        // mergeDataの場合、idが配列なので最初の要素を取得
+
+
         // フォームに値をセットする
         document.getElementById('item1').value = item.name || '組付け係';
         // document.getElementById('item2').value = item.name || '焼き入れ係';
         // document.getElementById('item3').value = item.name || '造管係';
+
+        // 選択した課の名前をヘッダーに反映
         const cardtitle = document.getElementById('cardtitle');
         let cardHeader= cardtitle.querySelector('.card-header');
         // cardHeaderが無いとき新規作成
@@ -284,9 +299,65 @@
         }
         cardHeader.textContent=`「${item.name}」に所属する係を編集`;
 
+        fetch(`/api/subsections/${sectionId}`)
+        .then(response => response.json())
+        .then(subsections => {
+            for (let i = 1 ; i <= 5 ; i++){
+                const input =document.getElementById(`item${i}`);
+                const createAt = document.getElementById(`createAt${i}`);
+                const updateAt = document.getElementById(`updatedAt${i}`);
+                if(subsections[i-1]){
+                    input.value = subsections[i-1].name;
+                    createAt.textContent = `作成:${subsections[i-1].created_at || '不明'}`;
+                    updateAt.textContent = `作成:${subsections[i-1].update_at || '未更新'}`;
+                }else{
+                    input.value='';
+                    createAt.textContent ='';
+                    updateAt.textContent ='';
+
+                }
+            }
+            document.getElementById('saveButton').dataset.sectionId = sectionId;
+            })
+            .catch(error => console.error('subsectionsの取得エラー:',error));
+
 
     }
 
+    // 保存ボタン処理
+    document.getElementById('saveButton').addEventListener('click',() => {
+        const sectionId = document.getElementById('saveButton').dataset.sectionId;
+        if (!sectionId) return;
+
+        const subsections=[];
+        for (let i = 1 ; i <= 5 ; i++){
+            // 入力した値を取得(空白削除)
+            const name = document.getElementById(`item${i}`).value.trim();
+            if (name){
+                subsections.push({name});
+            }
+        }
+
+    
+
+        fetch(`/api/subsections/${sectionId}`,{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json'
+
+            },
+            body: JSON.stringify(subsections)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('保存成功:',data);
+            alert('保存しました');
+            selectel(event,{ids:[sectionId],name:'再読み込み'});
+        })
+        .catch(error => console.error('保存エラー',error));
+
+    
+    });
 
     function setEl(event,item){
         document.getElementById('item1')

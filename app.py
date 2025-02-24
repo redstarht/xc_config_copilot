@@ -71,8 +71,8 @@ class Subsection(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey(
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    created_at = db.column(db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))))
-    updated_at = db.column(
+    created_at = db.Column(db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))))
+    updated_at = db.Column(
                             db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))),
                             onupdate=lambda:datetime.now(timezone(timedelta(hours=9)))
                         )
@@ -99,9 +99,10 @@ def manage_subsection(section_id):
         subsections = Subsection.query.filter_by(section_id=section_id).all()
         return jsonify ([sub.to_dict() for sub in subsections])
     
+    # 更新・保存機能
     elif request.method =='POST':
         data = request.json
-        exsiting_subsections = Subsection.query.filter_by(section_id=section_id).all
+        exsiting_subsections = Subsection.query.filter_by(section_id=section_id).all()
 
         # 既存データを更新 or 削除
         for i , sub in enumerate(exsiting_subsections):
@@ -110,7 +111,14 @@ def manage_subsection(section_id):
             else:
                 # 余分なデータは削除
                 db.session.delete(sub)
-            
+    
+        for i in range(len(exsiting_subsections),len(data)):
+            # section_id =flaskルーティング
+            new_sub = Subsection(section_id=section_id,name=data[i]['name'])
+            db.session.add(new_sub)
+
+        db.session.commit()
+        return jsonify({"message":"subsections updated successfully"})
 
 
 
