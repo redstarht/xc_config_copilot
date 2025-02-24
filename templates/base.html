@@ -25,7 +25,7 @@
 <body>
     {% block header %}
     <header>
-        <nav class="navbar navbar-expand-md">
+        <nav class="navbar navbar-expand-lg">
             <div class="container-fluid px-0 d-flex justify-content-between align-items-center position-relative">
                 <!-- 左側: XC-Config -->
                 <h1>
@@ -82,12 +82,17 @@
 
             <!-- 入力フォーム -->
             <div class="col-12 col-md-7 col-lg-9 ">
-                <div class="card">
-                    <div class="card-header">
+                <div class="card" id="cardtitle">
+                    <!-- <div class="card-header" id="cardtitle">
                         選択した課に所属する係を編集
-                    </div>
+                    </div> -->
                     <div class="card-body">
                         <form action="" id="editform"></form>
+                            <div class="mb-3">
+                                <label for="item1" class="item1">係1</label>
+                                <input for="text" class="form-control" id="item1" name="item1">
+
+                            </div>
                     </div>
                 </div>
             </div>
@@ -116,11 +121,16 @@
         const treeView = document.getElementById('treeView');
         treeView.innerHTML = '';
 
+        // 工場ごとにツリービューを作成
         factories.forEach(factory => {
             const factoryLi = createTreeNode(factory.name, factory.departments, null, null);
             treeView.appendChild(factoryLi);
         });
     }
+
+
+
+
 
     function createTreeNode(name, departments, sections, subsections, itemData) {
         const li = document.createElement('li');
@@ -131,7 +141,7 @@
         const ul = document.createElement('ul');
         ul.style.display = 'none';
 
-        // Department（製造部）の処理
+        // Department（製造部）の処理　要素0以上
         if (departments && departments.length > 0) {
             departments.forEach(department => {
                 ul.appendChild(createTreeNode(department.name, department.sections, null, null, department));
@@ -141,28 +151,30 @@
         // Section（課）の処理
         if (sections && sections.length > 0) {
             sections.forEach(section => {
-                ul.appendChild(createTreeNode(section.name, null, section.subsections, null, section));
+                ul.appendChild(createTreeNode(section.name, null, section.subsections, null, null));
             });
         }
 
         // Subsection（係）の処理
-        if (subsections && subsections.length > 0) {
-            subsections.forEach(subsection => {
-                ul.appendChild(createTreeNode(subsection.name, null, null, null, subsection));
-            });
-        }
+        // if (subsections && subsections.length > 0) {
+        //     subsections.forEach(subsection => {
+        //         ul.appendChild(createTreeNode(subsection.name, null, null, null, null));
+        //     });
+        // }
 
+        // トグル出し入れ
         if (ul.children.length > 0) {
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
                 toggleTree(ul, div);
             });
         }
-
+        // 選択した課の要素を出力
         if (itemData) {
             div.addEventListener('click', (e) => {
                 e.stopPropagation();
                 selectel(e, itemData);
+                console.log(itemData);
             }
             )
 
@@ -228,7 +240,7 @@
         return Object.values(sectionMap)
     }
 
-
+    // トグル出し入れ
     function toggleTree(ul, div) {
         const icon = div.querySelector('i');
         if (ul.style.display === 'none') {
@@ -260,11 +272,27 @@
 
         // フォームに値をセットする
         document.getElementById('item1').value = item.name || '組付け係';
-        document.getElementById('item2').value = item.name || '焼き入れ係';
-        document.getElementById('item3').value = item.name || '造管係';
+        // document.getElementById('item2').value = item.name || '焼き入れ係';
+        // document.getElementById('item3').value = item.name || '造管係';
+        const cardtitle = document.getElementById('cardtitle');
+        let cardHeader= cardtitle.querySelector('.card-header');
+        // cardHeaderが無いとき新規作成
+        if(!cardHeader){
+            cardHeader = document.createElement('div');
+            cardHeader.className='card-header';
+            cardtitle.prepend(cardHeader);
+        }
+        cardHeader.textContent=`「${item.name}」に所属する係を編集`;
+
 
     }
 
+
+    function setEl(event,item){
+        document.getElementById('item1')
+
+
+    }
 
 </script>
 {% endblock scripts %}

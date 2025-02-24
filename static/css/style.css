@@ -146,7 +146,7 @@ button:hover {
 }
 
 /* スマホ対応 */
-@media (max-width: 768px) {
+@media (max-width: 870px) {
     header {
         flex-direction: column;
         text-align: center;

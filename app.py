@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for ,jsonify
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime,timezone,timedelta
 
 
 app = Flask(__name__)
@@ -70,11 +71,18 @@ class Subsection(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey(
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    created_at = db.column(db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))))
+    updated_at = db.column(
+                            db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))),
+                            onupdate=lambda:datetime.now(timezone(timedelta(hours=9)))
+                        )
 
     def to_dict(self):
         return {
             'id':self.id,
-            'name':self.name
+            'name':self.name,
+            'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         }
 
 
@@ -82,6 +90,32 @@ class Subsection(db.Model):
 def get_tree():
     factories = Factory.query.all()
     return jsonify([factory.to_dict() for factory in factories])
+
+
+@app.route('/api/subsections/<int:section_id>',methods=['GET','POST'])
+def manage_subsection(section_id):
+    if request.method == 'GET':
+        # 指定されたsection_idに紐づいた子係(subsections)を取得
+        subsections = Subsection.query.filter_by(section_id=section_id).all()
+        return jsonify ([sub.to_dict() for sub in subsections])
+    
+    elif request.method =='POST':
+        data = request.json
+        exsiting_subsections = Subsection.query.filter_by(section_id=section_id).all
+
+        # 既存データを更新 or 削除
+        for i , sub in enumerate(exsiting_subsections):
+            if i < len(data):
+                sub.name = data[i]['name']
+            else:
+                # 余分なデータは削除
+                db.session.delete(sub)
+            
+
+
+
+
+
 
 @app.route('/')
 def index():
