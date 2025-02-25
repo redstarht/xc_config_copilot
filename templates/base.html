@@ -83,9 +83,11 @@
             <!-- 入力フォーム -->
             <div class="col-12 col-md-7 col-lg-9 ">
                 <div class="card" id="cardtitle">
-                    <!-- <div class="card-header" id="cardtitle">
+                    
+                    <div class="card-header" id="cardtitle">
                         選択した課に所属する係を編集
-                    </div> -->
+                    </div>
+
                     <div class="card-body">
                         <form action="" id="editform">
                         {% for i in range(1,6) %}
@@ -272,6 +274,12 @@
         // 前の選択を解除する
         console.log("選択されたitem:",item);
         console.log("選択されたsectionId:",item.ids ? item.ids[0] : "undefined");
+        if(item.sections){
+            console.log("部が選択されました、処理をスキップ");
+            return;
+        }
+
+        document.getElementById('saveButton').dataset.selectedItem = JSON.stringify(item);
 
         if(!item.ids || item.ids.length === 0){
             console.error("エラー:item.idsがundefined または 空")
@@ -297,11 +305,12 @@
         const cardtitle = document.getElementById('cardtitle');
         let cardHeader= cardtitle.querySelector('.card-header');
         // cardHeaderが無いとき新規作成
-        if(!cardHeader){
-            cardHeader = document.createElement('div');
-            cardHeader.className='card-header';
-            cardtitle.prepend(cardHeader);
-        }
+        
+        // if(!cardHeader){
+        //     cardHeader = document.createElement('div');
+        //     cardHeader.className='card-header';
+        //     cardtitle.prepend(cardHeader);
+        // }
         cardHeader.textContent=`「${item.name}」に所属する係を編集`;
 
         fetch(`/api/subsections/${sectionId}`)
@@ -334,7 +343,7 @@
                 if(subsections[i-1]){
                     input.value = subsections[i-1].name;
                     createAt.textContent = `作成:${subsections[i-1].created_at || '不明'}`;
-                    updateAt.textContent = `作成:${subsections[i-1].updated_at || '未更新'}`;
+                    updateAt.textContent = `更新:${subsections[i-1].updated_at || '未更新'}`;
                     console.log(subsections);
                 }else{
                     input.value='';
@@ -385,7 +394,8 @@
         .then(data => {
             console.log('保存成功:',data);
             alert('保存しました');
-            selectel(event,{ids:[sectionId],name:null});
+            const selectedItem = JSON.parse(document.getElementById('saveButton').dataset.selectedItem);
+            selectel(null,selectedItem);
         })
         .catch(error => {
             console.error('保存エラー',error);
