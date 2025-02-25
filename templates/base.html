@@ -270,23 +270,28 @@
     // ここのitem が departmentだけなのに動作する理屈がわからない
     function selectel(event, item) {
         // 前の選択を解除する
+        console.log("選択されたitem:",item);
+        console.log("選択されたsectionId:",item.ids ? item.ids[0] : "undefined");
+
+        if(!item.ids || item.ids.length === 0){
+            console.error("エラー:item.idsがundefined または 空")
+            return;
+
+        }
+         // 選択した section_idを取得
+         // mergeDataの場合、idが配列なので最初の要素を取得
+        const sectionId = item.ids[0];
+        document.getElementById('saveButton').dataset.sectionId = sectionId;
+
         document.querySelectorAll('.tree-item.active').forEach(el => {
             el.classList.remove('active');
-
-
         });
         // 選択した要素にハイライトを付ける
+        if(event){
         event.currentTarget.classList.add('active');
+        };
 
-        // 選択した section_idを取得
-        const sectionId = item.ids[0];
-        // mergeDataの場合、idが配列なので最初の要素を取得
-
-
-        // フォームに値をセットする
-        document.getElementById('item1').value = item.name || '組付け係';
-        // document.getElementById('item2').value = item.name || '焼き入れ係';
-        // document.getElementById('item3').value = item.name || '造管係';
+        
 
         // 選択した課の名前をヘッダーに反映
         const cardtitle = document.getElementById('cardtitle');
@@ -300,26 +305,46 @@
         cardHeader.textContent=`「${item.name}」に所属する係を編集`;
 
         fetch(`/api/subsections/${sectionId}`)
-        .then(response => response.json())
+        .then(response => {
+
+            if(!response.ok){
+                throw new Error(`HTTPエラー! ステータス:${response.status}`)
+            }
+            return  response.json();
+        })
         .then(subsections => {
+            console.log("取得データ",subsections);
+            if(Array.isArray(subsections)){
+                console.error("APIレスポンスが配列ではありません",subsections);
+                return;
+            }
+
+
             for (let i = 1 ; i <= 5 ; i++){
                 const input =document.getElementById(`item${i}`);
                 const createAt = document.getElementById(`createAt${i}`);
                 const updateAt = document.getElementById(`updatedAt${i}`);
+
+                if(!input || !createAt || !updateAt){
+                    console.warn(`IDが見つかりません:item${i},createAt${i},updatedAt${i}`);
+                    continue;
+
+                }
+
                 if(subsections[i-1]){
                     input.value = subsections[i-1].name;
                     createAt.textContent = `作成:${subsections[i-1].created_at || '不明'}`;
-                    updateAt.textContent = `作成:${subsections[i-1].update_at || '未更新'}`;
+                    updateAt.textContent = `作成:${subsections[i-1].updated_at || '未更新'}`;
+                    console.log(subsections);
                 }else{
                     input.value='';
                     createAt.textContent ='';
                     updateAt.textContent ='';
-
                 }
             }
-            document.getElementById('saveButton').dataset.sectionId = sectionId;
+            
             })
-            .catch(error => console.error('subsectionsの取得エラー:',error));
+        .catch(error => console.error('subsectionsの取得エラー:',error));
 
 
     }
@@ -327,7 +352,11 @@
     // 保存ボタン処理
     document.getElementById('saveButton').addEventListener('click',() => {
         const sectionId = document.getElementById('saveButton').dataset.sectionId;
-        if (!sectionId) return;
+        console.log(`送信時のsectionId:${sectionId}`);
+        if (!sectionId) {
+            console.error("エラー:sectionIdが取得できませんでした");
+            alert("エラー:sectionIdが未設定です");
+            return};
 
         const subsections=[];
         for (let i = 1 ; i <= 5 ; i++){
@@ -348,13 +377,21 @@
             },
             body: JSON.stringify(subsections)
         })
-        .then(response => response.json())
+        .then(response => {
+            if(!response.ok){
+                throw new Error(`HTTPエラー status : ${response.status}`);
+            }
+            return response.json()})
         .then(data => {
             console.log('保存成功:',data);
             alert('保存しました');
-            selectel(event,{ids:[sectionId],name:'再読み込み'});
+            selectel(event,{ids:[sectionId],name:null});
         })
-        .catch(error => console.error('保存エラー',error));
+        .catch(error => {
+            console.error('保存エラー',error);
+            alert('データの取得に失敗しました')
+        });
+
 
     
     });
