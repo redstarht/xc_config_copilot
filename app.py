@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for ,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime,timezone,timedelta
+import pprint
 
 
 app = Flask(__name__)
@@ -14,7 +15,6 @@ if __name__ == '__main__':
 class Factory(db.Model):
     __tablename__ = 'factories'
     id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String(10), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
     departments = db.relationship('Department', backref='factory', lazy=True)
     # Departmentテーブルのfactory列と双方向リレーション
@@ -22,7 +22,6 @@ class Factory(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'code': self.code,
             'name' : self.name,
             'departments': [dept.to_dict() for dept in self.departments]
         }
@@ -33,15 +32,12 @@ class Department(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     factory_id = db.Column(db.Integer, db.ForeignKey(
         'factories.id'), nullable=False)
-    code = db.Column(db.String(10), nullable=False)
-    mgmt_code = db.Column(db.String(10))
     name = db.Column(db.String(100), nullable=False)
     sections = db.relationship('Section', backref='department', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
-            'code':self.code,
             'name': self.name,
             'sections': [sec.to_dict() for sec in self.sections]
         }
@@ -52,14 +48,12 @@ class Section(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     department_id = db.Column(db.Integer, db.ForeignKey(
         'departments.id'), nullable=False)
-    code = db.Column(db.String(10), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     subsections = db.relationship('Subsection', backref='section', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
-            'code':self.code,
             'name': self.name,
             'subsections': [sub.to_dict() for sub in self.subsections]
         }
@@ -89,6 +83,12 @@ class Subsection(db.Model):
 @app.route('/api/tree', methods=['GET'])
 def get_tree():
     factories = Factory.query.all()
+    # 返り値テスト
+    # confirm_json = []
+    # for factory in factories:
+    #     confirm_json.append(factory.to_dict())
+    # pprint.pprint(confirm_json)
+    
     return jsonify([factory.to_dict() for factory in factories])
 
 
@@ -121,11 +121,12 @@ def manage_subsection(section_id):
         for i , sub in enumerate(exsiting_subsections):
             if i < len(data):
                 # キーエラー防止
-                sub.name = data[i]['name']
+                sub.name = data[i].get('name',sub.name)
             else:
                 # 余分なデータは削除
                 db.session.delete(sub)
-    
+
+        # 新しいデータを追加
         for i in range(len(exsiting_subsections),len(data)):
             # section_id =flaskルーティング
             new_sub = Subsection(section_id=section_id,name=data[i]['name'])
