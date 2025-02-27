@@ -112,6 +112,7 @@
 </body>
 {% block scripts %}
 <script>
+    let test = null;
     document.addEventListener('DOMContentLoaded', () => {
         console.log(document.getElementById('saveButton')); // null なら要素が存在していない
         fetchTreeData();
@@ -123,10 +124,26 @@
             .then(response => response.json())
             .then(data => {
                 console.log('取得したデータ:', JSON.stringify(data, null, 2));
+                test = data;
                 buildTreeView(data);
             })
             .catch(error => console.error('データ取得エラー', error));
     }
+
+    document.addEventListener('DOMContentLoaded',() =>{
+        const testButton = document.getElementById('test');
+        if(testButton){
+        testButton.addEventListener('click',test_log);
+        }
+    })
+
+    function test_log() {
+    if (test != null) {
+        console.log('取得データ:', test);
+    } else {
+        console.log("未定義です");
+    }
+}
 
     // ツリービューを構築
     function buildTreeView(factories) {
@@ -236,6 +253,7 @@
         console.log(factoryName.name, departmentName.name, sectionName);
         console.log(factoryName, departmentName, sectionName);
 
+        // オブジェクト型かどうか聖さ
         if(typeof factoryName ==="object" && factoryName !==null){
             factoryTitle=factoryName.name;
         }else{

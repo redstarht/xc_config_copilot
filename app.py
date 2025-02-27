@@ -1,15 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for ,jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime,timezone,timedelta
-import pprint
-
+from datetime import datetime, timezone, timedelta
+import os
+from flask_migrate import Migrate
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
-db = SQLAlchemy(app)
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Docker_debug用
+print(os.path.exists(os.path.join(app.instance_path, 'database.db')))
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'database.db')}"
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+migrate = Migrate(app,db)
 
 
 class Factory(db.Model):
@@ -22,7 +26,7 @@ class Factory(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'name' : self.name,
+            'name': self.name,
             'departments': [dept.to_dict() for dept in self.departments]
         }
 
@@ -65,18 +69,20 @@ class Subsection(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey(
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    created_at = db.Column(db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(
+        timezone(timedelta(hours=9))))
     updated_at = db.Column(
-                            db.DateTime,default=lambda:datetime.now(timezone(timedelta(hours=9))),
-                            onupdate=lambda:datetime.now(timezone(timedelta(hours=9)))
-                        )
+        db.DateTime, default=lambda: datetime.now(
+            timezone(timedelta(hours=9))),
+        onupdate=lambda: datetime.now(timezone(timedelta(hours=9)))
+    )
 
     def to_dict(self):
         return {
-            'id':self.id,
-            'name':self.name,
-            'created_at':self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
-            'updated_at':self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
+            'id': self.id,
+            'name': self.name,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         }
 
 
@@ -88,11 +94,11 @@ def get_tree():
     # for factory in factories:
     #     confirm_json.append(factory.to_dict())
     # pprint.pprint(confirm_json)
-    
+
     return jsonify([factory.to_dict() for factory in factories])
 
 
-@app.route('/api/subsections/<int:section_id>',methods=['GET','POST'])
+@app.route('/api/subsections/<int:section_id>', methods=['GET', 'POST'])
 def manage_subsection(section_id):
     if request.method == 'GET':
         print(f"section_id={section_id}")
@@ -102,43 +108,41 @@ def manage_subsection(section_id):
         if not subsections:
             print("データが見つかりませんでした[]を返します")
             return jsonify([])
-        
-        response = jsonify ([sub.to_dict() for sub in subsections])
+
+        response = jsonify([sub.to_dict() for sub in subsections])
         print(f"レスポンスデータ:{response.get_json}")
         return response
-    
+
     # 更新・保存機能
-    elif request.method =='POST':
+    elif request.method == 'POST':
         data = request.json
 
         if not data:
             print("エラーです、リクエストデータがNone")
-            return jsonify({"error":"リクエストボディが空です"},400)
+            return jsonify({"error": "リクエストボディが空です"}, 400)
 
-        exsiting_subsections = Subsection.query.filter_by(section_id=section_id).all()
+        exsiting_subsections = Subsection.query.filter_by(
+            section_id=section_id).all()
 
         # 既存データを更新 or 削除
-        for i , sub in enumerate(exsiting_subsections):
+        for i, sub in enumerate(exsiting_subsections):
             if i < len(data):
                 # キーエラー防止
-                sub.name = data[i].get('name',sub.name)
+                sub.name = data[i].get('name', sub.name)
             else:
                 # 余分なデータは削除
                 db.session.delete(sub)
 
         # 新しいデータを追加
-        for i in range(len(exsiting_subsections),len(data)):
+        for i in range(len(exsiting_subsections), len(data)):
             # section_id =flaskルーティング
-            new_sub = Subsection(section_id=section_id,name=data[i]['name'])
+            new_sub = Subsection(section_id=section_id, name=data[i]['name'])
             db.session.add(new_sub)
 
         db.session.commit()
-        print(f"更新後のsubsections:{[sub.to_dict() for sub in Subsection.query.filter_by(section_id=section_id).all()]}")
-        return jsonify({"message":"subsections updated successfully"})
-
-
-
-
+        print(
+            f"更新後のsubsections:{[sub.to_dict() for sub in Subsection.query.filter_by(section_id=section_id).all()]}")
+        return jsonify({"message": "subsections updated successfully"})
 
 
 @app.route('/')
@@ -201,3 +205,7 @@ def edit_subsection(subsection_id):
         db.session.commit()
         return redirect(url_for('subsections', section_id=subsection.section_id))
     return render_template('edit_subsection.html', subsection=subsection)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
