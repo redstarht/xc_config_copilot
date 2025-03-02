@@ -194,7 +194,11 @@
         const ul = document.createElement('ul');
         ul.style.display = 'none';
 
-        department.sections.forEach(section => {
+        const sortedsections = department.sections
+            .filter(section => !section.is_discounted) //is_discounted === true` のものは除外
+            .sort((a,b)=>a.order_no - b.order_no);
+
+        sortedsections.forEach(section => {
             const sectionNode = createSectionNode(section, factoryName, department.name);
             ul.appendChild(sectionNode);
         });

@@ -13,21 +13,26 @@ app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_p
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-migrate = Migrate(app,db)
+migrate = Migrate(app, db)
 
 
 class Factory(db.Model):
     __tablename__ = 'factories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    order_no = db.Column(db.Integer, default=500, nullable=True)
+    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
     departments = db.relationship('Department', backref='factory', lazy=True)
-    # Departmentテーブルのfactory列と双方向リレーション
 
+    # Departmentテーブルのfactory列と双方向リレーション
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'departments': [dept.to_dict() for dept in self.departments]
+            'departments': [dept.to_dict() for dept in self.departments],
+            'order_no': self.order_no,
+            'is_discounted': self.is_discounted
+
         }
 
 
@@ -37,13 +42,17 @@ class Department(db.Model):
     factory_id = db.Column(db.Integer, db.ForeignKey(
         'factories.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    order_no = db.Column(db.Integer, default=500, nullable=True)
+    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
     sections = db.relationship('Section', backref='department', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'sections': [sec.to_dict() for sec in self.sections]
+            'sections': [sec.to_dict() for sec in self.sections],
+            'order_no': self.order_no,
+            'is_discounted': self.is_discounted
         }
 
 
@@ -53,13 +62,17 @@ class Section(db.Model):
     department_id = db.Column(db.Integer, db.ForeignKey(
         'departments.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    order_no = db.Column(db.Integer, default=500, nullable=True)
+    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
     subsections = db.relationship('Subsection', backref='section', lazy=True)
 
     def to_dict(self):
         return {
             'id': self.id,
             'name': self.name,
-            'subsections': [sub.to_dict() for sub in self.subsections]
+            'subsections': [sub.to_dict() for sub in self.subsections],
+            'order_no': self.order_no,
+            'is_discounted': self.is_discounted
         }
 
 
@@ -69,6 +82,14 @@ class Subsection(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey(
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    # 順番を管理するカラム（デフォルト値なし、NULL許容）
+    order_no = db.Column(db.Integer, default=500, nullable=True)
+    # 廃盤flag （0: 現役, 1: 廃止）
+    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
+    # 作成ユーザーID（NULL許容）
+    created_by = db.Column(db.Integer, nullable=True)
+    # 更新ユーザーID（NULL許容）
+    updated_by = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(
         timezone(timedelta(hours=9))))
     updated_at = db.Column(
@@ -81,6 +102,10 @@ class Subsection(db.Model):
         return {
             'id': self.id,
             'name': self.name,
+            'order_no': self.order_no,
+            'is_discounted': self.is_discounted,
+            'created_by': self.created_by,
+            'updated_by': self.created_by,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         }

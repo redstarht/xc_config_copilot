@@ -1,5 +1,70 @@
-CREATE TABLE IF NOT EXISTS test_tb(
-    id int NOT NULL,
-    name TEXT not null,
-    official TEXT not NULL
-)
+-- factories テーブルへの INSERT
+INSERT INTO factories (id, name, order_no, is_discounted) VALUES
+(1, '福田工場', 500, 0),
+(2, 'とよはし工場', 500, 0),
+(3, '八和田山工場', 500, 0),
+(4, '米野工場', 500, 0),
+(5, 'いなべ工場', 500, 0),
+(6, '三好工場', 500, 0),
+(7, '三好第3工場', 500, 0),
+(8, '三五北海道', 500, 0),
+(9, '三五関東', 500, 0),
+(10, '三福', 500, 0);
+
+-- departments テーブルへの INSERT
+INSERT INTO departments (id, factory_id, name, order_no, is_discounted) VALUES
+(1, 1, '福田第１製造部', 500, 0),
+(2, 1, '福田第２製造部', 500, 0),
+(3, 2, 'とよはし製造部', 500, 0),
+(4, 3, '八和田山第１製造部', 500, 0),
+(5, 3, '八和田山第２製造部', 500, 0),
+(6, 3, '試作部', 500, 0),
+(7, 4, '米野製造部', 500, 0),
+(8, 5, 'いなべ製造部', 500, 0),
+(9, 6, '精鋼第１製造部', 500, 0),
+(10, 7, '精鋼第２製造部', 500, 0),
+(11, 8, '三五北海道', 500, 0),
+(12, 9, '三五関東製造部', 500, 0),
+(13, 10, '三福製造部', 500, 0);
+
+-- sections テーブルへの INSERT (idを詰める)
+INSERT INTO sections (id, department_id, name, order_no, is_discounted) VALUES
+(1, 1, '第１プレス課', 500, 0),
+(2, 1, '第２プレス課', 500, 0),
+(3, 1, '第１製造課', 500, 0),
+(4, 1, '第５製造課', 500, 0),
+(5, 2, '第３製造課', 500, 0),
+(6, 2, '第４製造課', 500, 0),
+(7, 3, '第１製造課', 500, 0),
+(8, 3, '第２製造課', 500, 0),
+(9, 3, '第３製造課', 500, 0),
+(10, 4, '第１製造課', 500, 0),
+(11, 4, '第２製造課', 500, 0),
+(12, 5, '第４製造課', 500, 0),
+(13, 5, '第５製造課', 500, 0),
+(14, 6, '部品試作課', 500, 0),
+(15, 7, '第１製造課', 500, 0),
+(16, 8, '第１製造課', 500, 0),
+(17, 8, '第２製造課', 500, 0),
+(18, 8, '第３製造課', 500, 0),
+(19, 8, '第４製造課', 500, 0),
+(20, 9, '線材課', 500, 0),
+(21, 9, '引抜課', 500, 0),
+(22, 9, '冷鍛・切削課', 500, 0),
+(23, 10, '第１課', 500, 0),
+(24, 10, '第２課', 500, 0),
+(25, 10, 'トヨタ三好内', 500, 0),
+(26, 11, '製造課', 500, 0),
+(27, 12, '第１製造課', 500, 0),
+(28, 12, '第２製造課', 500, 0),
+(29, 13, '第１製造課', 500, 0),
+(30, 13, '第２製造課', 500, 0),
+(31, 13, '第３製造課', 500, 0);
+
+-- -- subsections テーブルへの INSERT
+-- INSERT INTO subsections (id, section_id, name, order_no, is_discounted, created_by, updated_by, created_at, updated_at) VALUES
+-- (1, 1, 'サブセクションA', 500, 0, NULL, NULL, datetime('now', 'localtime'), datetime('now', 'localtime')),
+-- (2, 2, 'サブセクションB', 500, 0, NULL, NULL, datetime('now', 'localtime'), datetime('now', 'localtime')),
+-- (3, 3, 'サブセクションC', 500, 0, NULL, NULL, datetime('now', 'localtime'), datetime('now', 'localtime')),
+-- (4, 4, 'サブセクションD', 500, 0, NULL, NULL, datetime('now', 'localtime'), datetime('now', 'localtime')),
+-- (5, 5, 'サブセクションE', 500, 0, NULL, NULL, datetime('now', 'localtime'), datetime('now', 'localtime'));
