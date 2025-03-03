@@ -188,9 +188,9 @@ def index():
     return render_template('index.html', factories=factories_dict)
 
 
-@app.route('/edit_unit')
+@app.route('/edit_subsection')
 def edit_unit():
-    return render_template('edit_unit.html')
+    return render_template('edit_subsection.html')
 
 
 @app.route('/departments/<int:factory_id>')

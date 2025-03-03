@@ -1,3 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
 {% extends "base.html" %}
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>係編集</title>
+</head>
 {% block content %}
+<body>
+    {% block containar_fluid %}
+    <div>
+        <button id="test">
+            テストボタン
+        </button>
+    </div>
+    <div class="containar-fluid">
+        <div class="row mt-4">
+            <div class="col-12 col-md-5 col-lg-3 sidebar">
+                <div class="card">
+                    <div class="card-header">
+                        拠点/部/課
+                    </div>
+                    <div class="card-body">
+                        <ul class="tree-view" id="treeView"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 入力フォーム -->
+            <div class="col-12 col-md-7 col-lg-9 ">
+                <div class="card">
+                    <div class="card-header card-header-title" id="cardtitle">
+                        選択した課に所属する係を編集
+                    </div>
+
+                    <div class="card-body">
+                        <form action="" id="editform" style="display: none;">
+                            {% for i in range(1,6) %}
+                            <div class="mb-3">
+                                <label for="item1" class="item1">係{{ i }}</label>
+                                <input for="text" class="form-control" id="item{{i}}" name="item{{i}}">
+                                <small id="subsectionID{{i}}" class="text-muted"></small>
+                                <small id="createdAt{{i}}" class="text-muted"></small>
+                                <small id="updatedAt{{i}}" class="text-muted"></small>
+                            </div>
+                            {% endfor %}
+                            <button type='button' id="saveButton" class="btn btn-primary"
+                                style="display: none;">保存</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% endblock %}
+</body>
+{% block scripts %}
+<script>
+    let test = null;
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log(document.getElementById('saveButton')); // null なら要素が存在していない
+        fetchTreeData();
+    });
+
+    // ツリー構造のデータを取得
+    function fetchTreeData() {
+        fetch('/api/tree')
+            .then(response => response.json())
+            .then(data => {
+                console.log('取得したデータ:', JSON.stringify(data, null, 2));
+                test = data;
+                buildTreeView(data);
+            })
+            .catch(error => console.error('データ取得エラー', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const testButton = document.getElementById('test');
+        if (testButton) {
+            testButton.addEventListener('click', test_log);
+        }
+    })
+
+    function test_log() {
+        if (test != null) {
+            console.log('取得データ:', test);
+        } else {
+            console.log("未定義です");
+        }
+    }
+
+    // ツリービューを構築
+    function buildTreeView(factories) {
+        const treeView = document.getElementById('treeView');
+        treeView.innerHTML = '';
+
+        factories.forEach(factory => {
+            const factoryNode = createFactoryNode(factory);
+            treeView.appendChild(factoryNode);
+        });
+    }
+
+    // 工場ノードを作成
+    function createFactoryNode(factory) {
+        const li = document.createElement('li');
+        const div = createTreeItem(factory.name);
+        const ul = document.createElement('ul');
+        ul.style.display = 'none';
+
+        if (factory.departments.length > 1) {
+            factory.departments.forEach(department => {
+                const departmentNode = createDepartmentNode(department, factory.name);
+                ul.appendChild(departmentNode);
+            })
+        } else {
+            factory.departments[0].sections.forEach(section => {
+                const sectionNode = createSectionNode(section, factory, name, factory.departments[0].name);
+                ul.appendChild(sectionNode);
+            })
+
+
+        };
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTree(ul, div);
+        });
+
+        li.appendChild(div);
+        li.appendChild(ul);
+        return li;
+    }
+
+    // 部署ノードを作成
+    function createDepartmentNode(department, factoryName) {
+        const li = document.createElement('li');
+        const div = createTreeItem(department.name);
+        const ul = document.createElement('ul');
+        ul.style.display = 'none';
+
+        const sortedsections = department.sections
+            .filter(section => !section.is_discounted) //is_discounted === true` のものは除外
+            .sort((a, b) => a.order_no - b.order_no);
+
+        sortedsections.forEach(section => {
+            const sectionNode = createSectionNode(section, factoryName, department.name);
+            ul.appendChild(sectionNode);
+        });
+
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleTree(ul, div);
+        });
+
+        li.appendChild(div);
+        li.appendChild(ul);
+        return li;
+    }
+
+    // 課（section）ノードを作成
+    function createSectionNode(section, factoryName, departmentName) {
+        const li = document.createElement('li');
+        const div = createTreeItem(section.name);
+
+        div.dataset.sectionId = section.id; // 課のIDを保持
+
+        // 課を選択した時に対象のitemを表示
+        div.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectSection(section.id, section.name, div, factoryName, departmentName);
+        });
+
+        li.appendChild(div);
+        return li;
+    }
+
+    // ツリーアイテム（クリック可能な要素）を作成
+    function createTreeItem(name) {
+        const div = document.createElement('div');
+        div.className = 'tree-item';
+        div.innerHTML = `<i class="bi bi-caret-right-fill me-2"></i>${name}`;
+        return div;
+    }
+
+    // ツリーの開閉をトグル
+    function toggleTree(ul, div) {
+        const icon = div.querySelector('i');
+
+        if (ul.style.display === 'none') {
+            ul.style.display = 'block';
+            icon.className = 'bi bi-caret-down-fill me-2';
+        } else {
+            ul.style.display = 'none';
+            icon.className = 'bi bi-caret-right-fill me-2';
+        }
+    }
+
+    // 課を選択したときの処理
+    function selectSection(sectionId, sectionName, selectedElement, factoryName, departmentName) {
+        // 課名をヘッダーに反映
+        console.log(factoryName.name, departmentName.name, sectionName);
+        console.log(factoryName, departmentName, sectionName);
+
+        // オブジェクト型かどうか精査
+        if (typeof factoryName === "object" && factoryName !== null) {
+            factoryTitle = factoryName.name;
+        } else {
+            factoryTitle = factoryName;
+        };
+        if (typeof departmentName === "object" && departmentName !== null) {
+            departmentTitle = departmentName.name;
+        } else {
+            departmentTitle = departmentName;
+        }
+
+
+        const titleElement = [factoryTitle, departmentTitle, sectionName].filter(Boolean);
+        document.getElementById('cardtitle').textContent = `「${titleElement.join('/')}」に所属する係を編集`;
+
+        // 選択状態のリセット
+        clearActiveTreeItems();
+
+        // 新しく選択した課にハイライトを適用
+        selectedElement.classList.add('active');
+
+        // フォームと保存ボタンを表示
+        document.getElementById('editform').style.display = 'block';
+        document.getElementById('saveButton').style.display = 'block';
+
+        // 保存ボタンに section_id をセット
+        console.log(sectionId);
+        document.getElementById('saveButton').dataset.sectionId = sectionId;
+
+        // APIから係のデータを取得
+        fetchSubsections(sectionId);
+    }
+
+    // ツリー内の選択ハイライトをクリア
+    function clearActiveTreeItems() {
+        const activeItems = document.querySelectorAll('.tree-item.active');
+        activeItems.forEach(item => {
+            item.classList.remove('active');
+        });
+    }
+
+    // 係データを取得して表示
+    function fetchSubsections(sectionId) {
+        fetch(`/api/subsections/${sectionId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー! ステータス: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(subsections => {
+                updateSubsectionForm(subsections);
+            })
+            .catch(error => console.error('subsectionsの取得エラー:', error));
+    }
+
+    // フォームを更新（データがない場合でも要素が消えないようにする）
+    function updateSubsectionForm(subsections) {
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`item${i}`);
+            const subsectionID = document.getElementById(`subsectionID${i}`);
+            const createdAt = document.getElementById(`createdAt${i}`);
+            const updatedAt = document.getElementById(`updatedAt${i}`);
+
+
+            if (!input || !subsectionID || !createdAt || !updatedAt) {
+                continue;
+            }
+
+            if (subsections[i - 1]) {
+                input.value = subsections[i - 1].name;
+                subsectionID.dataset.subsectionID = subsections[i -1].id  || '';
+                subsectionID.textContent=`SubsectionID: ${subsections[i - 1].id || '未定義'} `;
+                createdAt.textContent = `作成: ${subsections[i - 1].created_at || '不明'}`;
+                updatedAt.textContent = `更新: ${subsections[i - 1].updated_at || '未更新'}`;
+            } else {
+                input.value = '';
+                subsectionID.dataset.subsectionID = '';
+                subsectionID.textContent=`SubsectionID: -`;
+                createdAt.textContent = '作成: -';
+                updatedAt.textContent = '更新: -';
+            }
+        }
+    }
+
+    // 保存ボタン処理
+    document.getElementById('saveButton').addEventListener('click', () => {
+        const sectionId = document.getElementById('saveButton').dataset.sectionId;
+
+        if (!sectionId) {
+            console.error("エラー: sectionIdが取得できませんでした");
+            alert("エラー: sectionIdが未設定です");
+            return;
+        }
+
+        const subsections = [];
+        for (let i = 1; i <= 5; i++) {
+            const input = document.getElementById(`item${i}`);
+            const subsectionID = document.getElementById(`subsectionID${i}`);
+
+            if(!input || !subsectionID) continue;
+
+            let name = input.value.trim();
+            const id = subsectionID.dataset.subsectionID;
+            
+            if(subsectionID.dataset.subsectionID){
+                if(!input.value){
+                name='';
+                }
+            }
+
+            // 既存データをID保持したまま送信(nameが空でも送る)
+            if (id) {
+                subsections.push({ id,name });
+            // 新規データはnameがある場合のみ送る
+            }else if (name){
+                subsections.push({name});
+            }
+        }
+
+        saveSubsections(sectionId, subsections);
+    });
+
+    // 係データを保存
+    function saveSubsections(sectionId, subsections) {
+        fetch(`/api/subsections/${sectionId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(subsections)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTPエラー status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('保存成功:', data);
+                alert('保存しました');
+                fetchSubsections(sectionId); // 保存後にデータを再取得
+            })
+            .catch(error => {
+                console.error('保存エラー', error);
+                alert('データの取得に失敗しました');
+            });
+    }
+
+</script>
+{% endblock scripts %}
 {% endblock %}
+</html>
+
+
+
+
+
+
