@@ -103,10 +103,8 @@ class Subsection(db.Model):
     sort_order = db.Column(db.Integer, default=500, nullable=True)
     # 廃盤flag （0: 現役, 1: 廃止）
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
-    # 作成ユーザーID（NULL許容）
-    created_by = db.Column(db.Integer, nullable=True)
-    # 更新ユーザーID（NULL許容）
-    updated_by = db.Column(db.Integer, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(
         timezone(timedelta(hours=9))))
     updated_at = db.Column(
@@ -137,8 +135,8 @@ class Production_line(db.Model):
     code = db.Column(db.String(50),default='',nullable=False)
     sort_order = db.Column(db.Integer, default=500, nullable=True)
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
-    created_by = db.Column(db.Integer, nullable=True)
-    updated_by = db.Column(db.Integer, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(
         timezone(timedelta(hours=9))))
     updated_at = db.Column(
@@ -156,8 +154,8 @@ class Employees(db.Model):
     code = db.Column(db.String(50),default='',nullable=False)
     sort_order = db.Column(db.Integer, default=500, nullable=True)
     is_deleted = db.Column(db.Boolean, default=False, nullable=False)
-    created_by = db.Column(db.Integer, nullable=True)
-    updated_by = db.Column(db.Integer, nullable=True)
+    created_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    updated_by = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(
         timezone(timedelta(hours=9))))
     updated_at = db.Column(

@@ -1,4 +1,4 @@
 DROP TABLE IF EXISTS subsections;
-DROP TABLE IF EXISTS sections;
-DROP TABLE IF EXISTS factories;
-DROP TABLE IF EXISTS departments;
+-- DROP TABLE IF EXISTS sections;
+-- DROP TABLE IF EXISTS factories;
+-- DROP TABLE IF EXISTS departments;
