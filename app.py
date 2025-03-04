@@ -15,13 +15,29 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+class Accounts(db.Model):
+    __tablename__='accounts'
+    id = db.Column(db.Integer,primary_key=True)
+    username = db.Column(db.String(50),unique=True,nullable=False)
+    password_hash = db.Column(db.String(100),nullable=False)
+    role = db.Column(db.Integer,default=1,nullable=False)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(
+        timezone(timedelta(hours=9))))
+    updated_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(
+            timezone(timedelta(hours=9))),
+        onupdate=lambda: datetime.now(timezone(timedelta(hours=9)))
+    )
+    
+
 
 class Factory(db.Model):
     __tablename__ = 'factories'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    order_no = db.Column(db.Integer, default=500, nullable=True)
-    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     departments = db.relationship('Department', backref='factory', lazy=True)
 
     # Departmentテーブルのfactory列と双方向リレーション
@@ -30,8 +46,8 @@ class Factory(db.Model):
             'id': self.id,
             'name': self.name,
             'departments': [dept.to_dict() for dept in self.departments],
-            'order_no': self.order_no,
-            'is_discounted': self.is_discounted
+            'sort_order': self.sort_order,
+            'is_deleted': self.is_deleted
 
         }
 
@@ -42,8 +58,8 @@ class Department(db.Model):
     factory_id = db.Column(db.Integer, db.ForeignKey(
         'factories.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    order_no = db.Column(db.Integer, default=500, nullable=True)
-    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     sections = db.relationship('Section', backref='department', lazy=True)
 
     def to_dict(self):
@@ -51,8 +67,8 @@ class Department(db.Model):
             'id': self.id,
             'name': self.name,
             'sections': [sec.to_dict() for sec in self.sections],
-            'order_no': self.order_no,
-            'is_discounted': self.is_discounted
+            'sort_order': self.sort_order,
+            'is_deleted': self.is_deleted
         }
 
 
@@ -62,8 +78,8 @@ class Section(db.Model):
     department_id = db.Column(db.Integer, db.ForeignKey(
         'departments.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    order_no = db.Column(db.Integer, default=500, nullable=True)
-    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     subsections = db.relationship('Subsection', backref='section', lazy=True)
 
     def to_dict(self):
@@ -71,8 +87,8 @@ class Section(db.Model):
             'id': self.id,
             'name': self.name,
             'subsections': [sub.to_dict() for sub in self.subsections],
-            'order_no': self.order_no,
-            'is_discounted': self.is_discounted
+            'sort_order': self.sort_order,
+            'is_deleted': self.is_deleted
         }
 
 
@@ -82,10 +98,11 @@ class Subsection(db.Model):
     section_id = db.Column(db.Integer, db.ForeignKey(
         'sections.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(50),default='',nullable=False)
     # 順番を管理するカラム（デフォルト値なし、NULL許容）
-    order_no = db.Column(db.Integer, default=500, nullable=True)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
     # 廃盤flag （0: 現役, 1: 廃止）
-    is_discounted = db.Column(db.Boolean, default=False, nullable=False)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
     # 作成ユーザーID（NULL許容）
     created_by = db.Column(db.Integer, nullable=True)
     # 更新ユーザーID（NULL許容）
@@ -102,13 +119,53 @@ class Subsection(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'order_no': self.order_no,
-            'is_discounted': self.is_discounted,
+            'code':self.code,
+            'sort_order': self.sort_order,
+            'is_deleted': self.is_deleted,
             'created_by': self.created_by,
             'updated_by': self.created_by,
             'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None,
             'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None
         }
+
+class Production_line(db.Model):
+    __tablename__='production_lines'
+    id=db.Column(db.Integer, primary_key=True)
+    subsection_id = db.Column(db.Integer, db.ForeignKey(
+        'subsections.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(50),default='',nullable=False)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    created_by = db.Column(db.Integer, nullable=True)
+    updated_by = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(
+        timezone(timedelta(hours=9))))
+    updated_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(
+            timezone(timedelta(hours=9))),
+        onupdate=lambda: datetime.now(timezone(timedelta(hours=9)))
+    )
+
+class Employees(db.Model):
+    __tablename__='employees'
+    id=db.Column(db.Integer,primary_key=True)
+    subsection_id = db.Column(db.Integer, db.ForeignKey(
+        'subsections.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(50),default='',nullable=False)
+    sort_order = db.Column(db.Integer, default=500, nullable=True)
+    is_deleted = db.Column(db.Boolean, default=False, nullable=False)
+    created_by = db.Column(db.Integer, nullable=True)
+    updated_by = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(
+        timezone(timedelta(hours=9))))
+    updated_at = db.Column(
+        db.DateTime, default=lambda: datetime.now(
+            timezone(timedelta(hours=9))),
+        onupdate=lambda: datetime.now(timezone(timedelta(hours=9)))
+    )
+    
 
 
 @app.route('/api/tree', methods=['GET'])

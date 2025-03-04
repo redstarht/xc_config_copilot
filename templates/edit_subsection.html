@@ -142,8 +142,8 @@
         ul.style.display = 'none';
 
         const sortedsections = department.sections
-            .filter(section => !section.is_discounted) //is_discounted === true` のものは除外
-            .sort((a, b) => a.order_no - b.order_no);
+            .filter(section => !section.is_deleted) //is_deleted === true` のものは除外
+            .sort((a, b) => a.sort_order - b.sort_order);
 
         sortedsections.forEach(section => {
             const sectionNode = createSectionNode(section, factoryName, department.name);
